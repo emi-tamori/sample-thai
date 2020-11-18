@@ -124,6 +124,17 @@ const lineBot = (req,res) => {
         console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
         console.log('選択した日付：'+ selectedDate);//2020-11-17の形で出力
         askTime(ev,orderedMenu,treatTime,selectedDate);
+      }else if(splitData[0] === 'time'){
+        const orderedMenu = splitData[1];//メニュー取得
+        const treatTime = splitData[2];//施術時間を取得
+        const selectedDate = splitData[3];//来店日取得
+        const selectedTime = splitData[4];//来店時間取得
+        console.log('timeのsplitData = ', splitData);//[ 'time', '0', '30', '2020-11-17', '0' ]の形で出力
+        console.log('選択したメニユー番号：'+ orderedMenu);//0の形で出力(数値)
+        console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
+        console.log('選択した日付'+ selectedDate);//2020-11-17の形で出力
+        console.log('来店時間：'+ selectedTime);//0の形で出力(数値)
+        confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
       }
  }
 //orderChoice関数（メニュー選択）
@@ -799,4 +810,3 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
       }
     });
 }
-
