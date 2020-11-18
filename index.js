@@ -78,9 +78,7 @@ const lineBot = (req,res) => {
     const text = (ev.message.type === 'text') ? ev.message.text : '';
     
     if(text === '予約する'){
-        return client.replyMessage(ev.replyToken,{
             orderChoice(ev);
-        });
     }else{
         return client.replyMessage(ev.replyToken,{
             "type":"text",
