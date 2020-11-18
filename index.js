@@ -98,9 +98,11 @@ const lineBot = (req,res) => {
       const startTimestamp = nextReservation[0].starttime;
       const date = dateConversion(startTimestamp);
       const menu = MENU[parseInt(nextReservation[0].menu)];
+      const treattime = nextReservation[0].treattime;
       console.log('startTimestamp = ' + startTimestamp);// スタート時間タイムスタンプの形で出力
       console.log('date = ' + date);//11月19日(木) 23:00の形で出力
       console.log('menu = ' + menu);//タイ式（ストレッチ）の形で出力
+      console.log('treattime = ' + treattime);//
       return client.replyMessage(ev.replyToken,{
         "type":"text",
         "wrap": true,
