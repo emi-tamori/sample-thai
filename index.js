@@ -135,6 +135,32 @@ const lineBot = (req,res) => {
         console.log('選択した日付'+ selectedDate);//2020-11-17の形で出力
         console.log('来店時間：'+ selectedTime);//0の形で出力(数値)
         confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
+      }else if(splitData[0] === 'yes'){
+        const orderedMenu = splitData[1];//メニュー取得
+        const treatTime = splitData[2];//施術時間を取得
+        const selectedDate = splitData[3];//来店日取得
+        const selectedTime = splitData[4];//来店時間取得
+        const startTimestamp = timeConversion(selectedDate,selectedTime);//スタート日時をタイムスタンプ形式形式で取得
+        //const treatTime = calcTreatTime(ev.source.userId,orderedMenu);//施術時間を取得
+        const endTimestamp = startTimestamp + treatTime*60*1000;//施術終了時間を取得
+        const insertQuery = {
+          text:'INSERT INTO reservations (line_uid, name, scheduledate, starttime, endtime, menu, treattime) VALUES($1,$2,$3,$4,$5,$6,$7);',
+          values:[ev.source.userId,profile.displayName,selectedDate,startTimestamp,endTimestamp,orderedMenu,treatTime]
+        };
+        connection.query(insertQuery)
+          .then(res=>{
+            console.log('予約データ格納成功！');
+            client.replyMessage(ev.replyToken,{
+              "type":"text",
+              "wrap": true,
+              "text":"予約が完了しました。\nご来店お待ちしております\uDBC0\uDC05"
+            });
+          })
+          .catch(e=>console.log(e));
+        console.log('startTime:',startTimestamp);
+        console.log('endTime:',endTimestamp);
+      }else if(splitData[0] === 'no'){
+        // あとで何か入れる
       }
  }
 //orderChoice関数（メニュー選択）
@@ -808,5 +834,52 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
           ]
         },
       }
+    });
+}
+//confirmation関数（確認メッセージをリプライ）
+const confirmation = (ev,menu,menutime,date,time) => {
+    const splitDate = date.split('-');
+    const selectedTime = 12 + parseInt(time);
+    return client.replyMessage(ev.replyToken,{
+     "type":"flex",
+     "altText":"menuSelect",
+     "contents":
+     {
+      "type": "bubble",
+      "header": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": `次回ご予約は${splitDate[1]}月${splitDate[2]}日 ${selectedTime}時〜でよろしいですか？`,
+            "margin": "md",
+            "wrap": true
+          }
+        ]
+      },
+      "body": {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [
+          {
+            "type": "button",
+            "action": {
+              "type": "postback",
+              "label": "はい",
+              "data": `yes&${menu}&${menutime}&${date}&${time}`
+            }
+          },
+          {
+            "type": "button",
+            "action": {
+              "type": "postback",
+              "label": "いいえ",
+              "data": `no&${menu}&${menutime}&${date}&${time}`
+            }
+          }
+        ]
+      }
+    }
     });
 }
