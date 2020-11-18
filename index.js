@@ -79,8 +79,7 @@ const lineBot = (req,res) => {
     
     if(text === '予約する'){
         return client.replyMessage(ev.replyToken,{
-            "type":"text",
-            "text":"かしこまりました。次回予約ですね。メニューは・・・"
+            orderChoice(ev);
         });
     }else{
         return client.replyMessage(ev.replyToken,{
@@ -89,3 +88,96 @@ const lineBot = (req,res) => {
         });
     }
  }
+ //orderChoice関数（メニュー選択）
+const orderChoice = (ev) => {
+    return client.replyMessage(ev.replyToken,{
+        "type":"flex",
+        "altText":"menuSelect",
+        "contents":
+        {
+            "type": "bubble",
+            "header": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "メニューを選択してください",
+                  "size": "lg",
+                  "align": "center"
+                }
+              ]
+            },
+            "hero": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": "（1つのみ選択可能です）",
+                  "size": "md",
+                  "align": "center"
+                },
+                {
+                  "type": "separator",
+                  "margin": "md"
+                }
+              ]
+            },
+            "body": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "タイ式（ストレッチ）",
+                    "data": "menu&0"
+                  },
+                  "margin": "md",
+                  "style": "primary",
+                  "color": "#999999"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "タイ式（アロマオイル）",
+                    "data": "menu&1"
+                  },
+                  "margin": "md",
+                  "style": "primary",
+                  "color": "#999999"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "足つぼ",
+                    "data": "menu&2"
+                  },
+                  "margin": "md",
+                  "style": "primary",
+                  "color": "#999999"
+                }
+              ]
+            },
+            "footer": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "キャンセル",
+                    "data": "hello"
+                  }
+                }
+              ]
+            }
+          }
+    });
+}
+
