@@ -23,6 +23,9 @@ const client = new line.Client(config);
 app
    .post('/hook',line.middleware(config),(req,res)=> lineBot(req,res))
    .listen(PORT,()=>console.log(`Listening on ${PORT}`));
+//初期値設定
+const WEEK = [ "日", "月", "火", "水", "木", "金", "土" ];
+const MENU = ['タイ式（ストレッチ）','タイ式（アロマオイル）','足つぼ'];
 //顧客データベース作成
 const create_userTable = {
     text:'CREATE TABLE IF NOT EXISTS users (id SERIAL NOT NULL, line_uid VARCHAR(255), display_name VARCHAR(255), timestamp VARCHAR(255));'
@@ -32,6 +35,15 @@ const create_userTable = {
        console.log('table users created successfully!!');
    })
    .catch(e=>console.log(e));
+//予約データベースの作成
+const create_reservationTable = {
+  text:'CREATE TABLE IF NOT EXISTS reservations (id SERIAL NOT NULL, line_uid VARCHAR(255), name VARCHAR(100), scheduledate DATE, starttime BIGINT, endtime BIGINT, menu VARCHAR(50),treattime BIGINT);'
+};
+connection.query(create_reservationTable)
+.then(()=>{
+  console.log('table users created successfully!!');
+})
+.catch(e=>console.log(e));
 //lineBot関数（イベントタイプによって実行関数を振り分け）
 const lineBot = (req,res) => {
     res.status(200).end();
@@ -81,6 +93,19 @@ const lineBot = (req,res) => {
     
     if(text === '予約する'){
         orderChoice(ev);
+    }else if(text === '予約確認'){
+      const nextReservation = await checkNextReservation(ev);
+      const startTimestamp = nextReservation[0].starttime;
+      const date = dateConversion(startTimestamp);
+      const menu = MENU[parseInt(nextReservation[0].menu)];
+      console.log('startTimestamp = ' + startTimestamp);// スタート時間タイムスタンプの形で出力
+      console.log('date = ' + date);//11月19日(木) 23:00の形で出力
+      console.log('menu = ' + menu);//タイ式（ストレッチ）の形で出力
+      return client.replyMessage(ev.replyToken,{
+        "type":"text",
+        "wrap": true,
+        "text":`次回予約は\n■■■■■■■■■\n\n${date}~\n${menu}\n\n■■■■■■■■■\nでお取りしてます\uDBC0\uDC22`
+      });
     }else{
         return client.replyMessage(ev.replyToken,{
             "type":"text",
@@ -883,3 +908,44 @@ const confirmation = (ev,menu,menutime,date,time) => {
     }
     });
 }
+//checkNextReservation関数(未来に予約があるか確認)
+const checkNextReservation = (ev) => {
+  return new Promise((resolve,reject)=>{
+    const id = ev.source.userId;
+    const nowTime = new Date().getTime();
+    
+    const selectQuery = {
+      text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
+      values: [`${id}`]
+    };
+    
+    connection.query(selectQuery)
+      .then(res=>{
+        if(res.rows.length){
+          const nextReservation = res.rows.filter(object=>{
+            return parseInt(object.starttime) >= nowTime;
+          });
+          console.log('nextReservation:',nextReservation);
+          resolve(nextReservation);
+        }else{
+          resolve();
+        }
+      })
+      .catch(e=>console.log(e));
+  });
+ }
+//timeConversion関数（選択日と選択時間使ってタイムスタンプ形式へ変換）
+const timeConversion = (date,time) => {
+    const selectedTime = 12 + parseInt(time) - 9;
+    return new Date(`${date} ${selectedTime}:00`).getTime();
+}
+//dateConversion関数（タイムスタンプを任意の日付、時刻の文字列へ変換）
+const dateConversion = (timestamp) => {
+  const d = new Date(parseInt(timestamp));
+  const month = d.getMonth()+1;
+  const date = d.getDate();
+  const day = d.getDay();
+  const hour = ('0' + (d.getHours()+9)).slice(-2);
+  const min = ('0' + d.getMinutes()).slice(-2);
+  return `${month}月${date}日(${WEEK[day]}) ${hour}:${min}`;
+ }
