@@ -108,6 +108,13 @@ const lineBot = (req,res) => {
             console.log('足つぼマッサージを選択');
             orderTime2(ev,orderedMenu);
           }
+      }else if(splitData[0] === 'menutime'){
+        const orderedMenu = splitData[1];//メニュー取得
+        const treatTime = splitData[2];//施術時間を取得
+        console.log('menutimeのsplitData = ', splitData);//[ 'menutime', '0', '90' ]形で出力
+        console.log('選択したメニユー番号：'+ orderedMenu);//0の形で出力(数値)
+        console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
+        askDate(ev,orderedMenu,treatTime);
       }
  }
  //orderChoice関数（メニュー選択）
@@ -506,6 +513,65 @@ const orderTime0 = (ev,orderedMenu) => {
         }
       }
   
+    });
+  }
+//askDate関数（来店希望日選択）
+const askDate = (ev,orderedMenu,treatTime) => {
+    return client.replyMessage(ev.replyToken,{
+      "type":"flex",
+      "altText":"予約日選択",
+      "contents":
+      {
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "来店希望日を選んでください",
+              "margin": "md",
+              "align": "center"
+            }
+          ]
+        },
+        "hero": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "datetimepicker",
+                "label": "希望日を選択する",
+                "data": `date&${orderedMenu}&${treatTime}`,
+                "mode": "date"
+              },
+              "style": "primary"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "キャンセル",
+                "data": "hello"
+              },
+              "margin": "md",
+              "style": "secondary"
+            }
+          ]
+        }
+      }
     });
   }
 
