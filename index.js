@@ -2,6 +2,15 @@
 const express = require('express');
 const app = express();
 const line = require('@line/bot-sdk');
+const { Client } = require('pg');
+const connection = new Client({
+    user:process.env.PG_USER,
+    host:process.env.PG_HOST,
+    database:process.env.PG_DATABASE,
+    password:process.env.PG_PASSWORD,
+    port:5432
+  });
+ connection.connect();
 const PORT = process.env.PORT || 5000
 
 const config = {
@@ -14,7 +23,15 @@ const client = new line.Client(config);
 app
    .post('/hook',line.middleware(config),(req,res)=> lineBot(req,res))
    .listen(PORT,()=>console.log(`Listening on ${PORT}`));
-
+//顧客データベース作成
+const create_userTable = {
+    text:'CREATE TABLE IF NOT EXISTS users (id SERIAL NOT NULL, line_uid VARCHAR(255), display_name VARCHAR(255), timestamp VARCHAR(255));'
+ };
+ connection.query(create_userTable)
+   .then(()=>{
+       console.log('table users created successfully!!');
+   })
+   .catch(e=>console.log(e));
 //lineBot関数（イベントタイプによって実行関数を振り分け）
 const lineBot = (req,res) => {
     res.status(200).end();
