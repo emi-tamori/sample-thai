@@ -115,9 +115,18 @@ const lineBot = (req,res) => {
         console.log('選択したメニユー番号：'+ orderedMenu);//0の形で出力(数値)
         console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
         askDate(ev,orderedMenu,treatTime);
+      }else if(splitData[0] === 'date'){
+        const orderedMenu = splitData[1];//メニュー取得
+        const treatTime = splitData[2];//施術時間を取得
+        const selectedDate = ev.postback.params.date;//来店日取得
+        console.log('dateのsplitData = ', splitData);//[ 'date', '0', '90' ]形で出力
+        console.log('選択したメニユー番号：'+ orderedMenu);//0の形で出力(数値)
+        console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
+        console.log('選択した日付：'+ selectedDate);//2020-11-17の形で出力
+        askTime(ev,orderedMenu,treatTime,selectedDate);
       }
  }
- //orderChoice関数（メニュー選択）
+//orderChoice関数（メニュー選択）
 const orderChoice = (ev) => {
     return client.replyMessage(ev.replyToken,{
         "type":"flex",
@@ -324,9 +333,9 @@ const orderTime0 = (ev,orderedMenu) => {
         }
       }
     });
-  }
-  //orderTime1関数（施術時間選択：タイ式アロマ）
-  const orderTime1 = (ev,orderedMenu) => {
+}
+//orderTime1関数（施術時間選択：タイ式アロマ）
+const orderTime1 = (ev,orderedMenu) => {
     return client.replyMessage(ev.replyToken,{
       "type":"flex",
       "altText":"menuSelectTime",
@@ -430,9 +439,9 @@ const orderTime0 = (ev,orderedMenu) => {
       }
   
     });
-  }
-  //orderTime2関数（施術時間選択：足つぼ）
-  const orderTime2 = (ev,orderedMenu) => {
+}
+//orderTime2関数（施術時間選択：足つぼ）
+const orderTime2 = (ev,orderedMenu) => {
     return client.replyMessage(ev.replyToken,{
       "type":"flex",
       "altText":"menuSelectTime",
@@ -514,7 +523,7 @@ const orderTime0 = (ev,orderedMenu) => {
       }
   
     });
-  }
+}
 //askDate関数（来店希望日選択）
 const askDate = (ev,orderedMenu,treatTime) => {
     return client.replyMessage(ev.replyToken,{
@@ -573,5 +582,221 @@ const askDate = (ev,orderedMenu,treatTime) => {
         }
       }
     });
-  }
+}
+//askTime関数(時間帯を選択)
+const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
+    return client.replyMessage(ev.replyToken,{
+      "type":"flex",
+      "altText":"予約日選択",
+      "contents":
+      {
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "ご希望の時間帯を選択してください\n（緑 ＝ 予約可能です）",
+              "margin": "md",
+              "align": "center",
+              "wrap": true
+            }
+          ]
+        },
+        "hero": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": `${selectedDate}`,
+              "margin": "none",
+              "weight": "bold",
+              "align": "center",
+              "size": "lg"
+            },
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "12時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&0`
+                  },
+                  "style": "primary",
+                  "margin": "md"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "13時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&1`
+                  },
+                  "style": "primary",
+                  "margin": "md"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "14時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&2`
+                  },
+                  "style": "primary",
+                  "margin": "md"
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "15時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&3`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "16時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&4`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "17時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&5`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                }
+              ],
+              "margin": "md"
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "18時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&6`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "19時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&7`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "20時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&8`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                }
+              ],
+              "margin": "md"
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "21時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&9`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "22時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&10`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "23時~",
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&11`
+                  },
+                  "margin": "md",
+                  "style": "primary"
+                }
+              ],
+              "margin": "md"
+            },
+            {
+              "type": "box",
+              "layout": "horizontal",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "終了",
+                    "data": "hello"
+                  },
+                  "margin": "md",
+                  "style": "secondary"
+                }
+              ],
+              "margin": "md"
+            },
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+      }
+    });
+}
 
