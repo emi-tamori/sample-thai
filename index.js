@@ -57,6 +57,15 @@ const lineBot = (req,res) => {
  //greeting_follow関数(友達登録時の処理)
  const greeting_follow = async (ev) => {
     const profile = await client.getProfile(ev.source.userId);
+    const table_insert = {
+        text:'INSERT INTO users (line_uid,display_name,timestamp) VALUES($1,$2,$3);',
+        values:[ev.source.userId,profile.displayName,ev.timestamp]
+      };
+      connection.query(table_insert)
+        .then(()=>{
+           console.log('insert successfully!!')
+         })
+        .catch(e=>console.log(e));
     return client.replyMessage(ev.replyToken,{
         "type":"text",
         "text":`${profile.displayName}さん、友達登録ありがとうございます\uDBC0\uDC04\n\nタイマッサージ店〇〇です\n\nご予約お待ちしております\uDBC0\uDC01\uDBC0\uDC2D\uDBC0\uDC2D`
