@@ -104,7 +104,7 @@ const lineBot = (req,res) => {
       return client.replyMessage(ev.replyToken,{
         "type":"text",
         "wrap": true,
-        "text":`次回予約は\n■■■■■■■■■\n\n${date}~\n${menu}\n\n■■■■■■■■■\nでお取りしてます\uDBC0\uDC22`
+        "text":`次回予約は\n■■■■■■■■■\n\n${date}~\n${menu}${treattime}分\n\n■■■■■■■■■\nでお取りしてます\uDBC0\uDC22`
       });
     }else{
         return client.replyMessage(ev.replyToken,{
