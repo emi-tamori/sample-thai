@@ -73,12 +73,19 @@ const lineBot = (req,res) => {
  }
  //handleMessageEvent関数（メッセージが送られてきた時の処理振り分け）
  const handleMessageEvent = async (ev) => {
+    console.log('ev:',ev);
     const profile = await client.getProfile(ev.source.userId);
     const text = (ev.message.type === 'text') ? ev.message.text : '';
     
-    return client.replyMessage(ev.replyToken,{
-        "type":"text",
-        "wrap": true,
-        "text":`${profile.displayName}さん\nメッセージありがとうございます。\n\n申し訳ございませんが、このアカウントでは個別の返信をしておりません。\n\n＜お問い合わせ＞\nご質問などお問い合わせは店舗にお願いします。\nhttps://tsukumonetwork.co.jp/`
-    });
+    if(text === '予約する'){
+        return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"かしこまりました。次回予約ですね。メニューは・・・"
+        });
+    }else{
+        return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":`${profile.displayName}さん\nメッセージありがとうございます。\n\n申し訳ございませんが、このアカウントでは個別の返信をしておりません。\n\n＜お問い合わせ＞\nご質問などお問い合わせは店舗にお願いします。\nhttps://tsukumonetwork.co.jp/`
+        });
+    }
  }
