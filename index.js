@@ -46,7 +46,9 @@ const lineBot = (req,res) => {
             case 'message'://メッセージが送られてきたら発火
                 promises.push(handleMessageEvent(ev));
                 break;
-            
+            case 'postback'://ボタンが押されたらdataの値を返す
+                promises.push(handlePostbackEvent(ev));
+                break;
         }
     }
     Promise
@@ -54,7 +56,7 @@ const lineBot = (req,res) => {
         .then(console.log('all promises passed'))
         .catch(e=>console.error(e.stack));
  }
- //greeting_follow関数(友達登録時の処理)
+//greeting_follow関数(友達登録時の処理)
  const greeting_follow = async (ev) => {
     const profile = await client.getProfile(ev.source.userId);
     const table_insert = {
@@ -71,7 +73,7 @@ const lineBot = (req,res) => {
         "text":`${profile.displayName}さん、友達登録ありがとうございます\uDBC0\uDC04\n\nタイマッサージ店〇〇です\n\nご予約お待ちしております\uDBC0\uDC01\uDBC0\uDC2D\uDBC0\uDC2D`
     });
  }
- //handleMessageEvent関数（メッセージが送られてきた時の処理振り分け）
+//handleMessageEvent関数（メッセージが送られてきた時の処理振り分け）
  const handleMessageEvent = async (ev) => {
     console.log('ev:',ev);
     const profile = await client.getProfile(ev.source.userId);
@@ -85,6 +87,28 @@ const lineBot = (req,res) => {
             "text":`${profile.displayName}さん\nメッセージありがとうございます。\n\n申し訳ございませんが、このアカウントでは個別の返信をしておりません。\n\n＜お問い合わせ＞\nご質問などお問い合わせは店舗にお願いします。\nhttps://tsukumonetwork.co.jp/`
         });
     }
+}
+ //handlePostbackEvent関数（イベントタイプ"postback"の処理振り分け）
+ const handlePostbackEvent = async (ev) => {
+    const profile = await client.getProfile(ev.source.userId);
+    const data = ev.postback.data;
+    const splitData = data.split('&');
+
+    if(splitData[0] === 'menu'){
+        const orderedMenu = splitData[1];//メニュー取得
+        console.log('menuのsplitData = ', splitData);//[ 'menu', '0' ]形で出力
+        console.log('選択したメニュー番号：'+ orderedMenu);//0の形で出力(数値)
+          if (orderedMenu == 0) {
+            console.log('タイ式（ストレッチ）を選択');
+            orderTime0(ev,orderedMenu);
+          }else if(orderedMenu == 1){
+            console.log('タイ式（アロマ）を選択');
+            orderTime1(ev,orderedMenu);
+          }else if(orderedMenu == 2){
+            console.log('足つぼマッサージを選択');
+            orderTime2(ev,orderedMenu);
+          }
+      }
  }
  //orderChoice関数（メニュー選択）
 const orderChoice = (ev) => {
@@ -178,5 +202,310 @@ const orderChoice = (ev) => {
           }
     });
 }
-
+//orderTime0関数（施術時間選択：タイ式ストレッチ）
+const orderTime0 = (ev,orderedMenu) => {
+    return client.replyMessage(ev.replyToken,{
+      "type":"flex",
+      "altText":"menuSelectTime",
+      "contents":
+      {
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "時間を選択してください",
+              "align": "center"
+            }
+          ]
+        },
+        "hero": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "タイ式（ストレッチ）",
+              "align": "center"
+            },
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "30分　3,000円",
+                "data": `menutime&${orderedMenu}&30`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "45分　4,000円",
+                "data": `menutime&${orderedMenu}&45`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "60分　5,000円",
+                "data": `menutime&${orderedMenu}&60`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "90分　7,000円",
+                "data": `menutime&${orderedMenu}&90`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "120分　9,000円",
+                "data": `menutime&${orderedMenu}&120`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "キャンセル",
+                "data": "hello"
+              }
+            }
+          ]
+        }
+      }
+    });
+  }
+  //orderTime1関数（施術時間選択：タイ式アロマ）
+  const orderTime1 = (ev,orderedMenu) => {
+    return client.replyMessage(ev.replyToken,{
+      "type":"flex",
+      "altText":"menuSelectTime",
+      "contents":
+      {
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "時間を選択してください",
+              "align": "center"
+            }
+          ]
+        },
+        "hero": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "タイ式（アロマオイル）",
+              "align": "center"
+            },
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "45分　5,000円",
+                "data": `menutime&${orderedMenu}&45`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "60分　7,000円",
+                "data": `menutime&${orderedMenu}&60`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "90分　9,000円",
+                "data": `menutime&${orderedMenu}&90`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "120分　12,000円",
+                "data": `menutime&${orderedMenu}&120`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "キャンセル",
+                "data": "hello"
+              }
+            }
+          ]
+        }
+      }
+  
+    });
+  }
+  //orderTime2関数（施術時間選択：足つぼ）
+  const orderTime2 = (ev,orderedMenu) => {
+    return client.replyMessage(ev.replyToken,{
+      "type":"flex",
+      "altText":"menuSelectTime",
+      "contents":
+      {
+        "type": "bubble",
+        "header": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "時間を選択してください",
+              "align": "center"
+            }
+          ]
+        },
+        "hero": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "足つぼマッサージ",
+              "align": "center"
+            },
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "30分　3,000円",
+                "data": `menutime&${orderedMenu}&30`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "60分　5,000円",
+                "data": `menutime&${orderedMenu}&60`
+              },
+              "style": "primary",
+              "color": "#999999",
+              "margin": "md"
+            },
+            {
+              "type": "separator",
+              "margin": "md"
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "button",
+              "action": {
+                "type": "postback",
+                "label": "キャンセル",
+                "data": "hello"
+              }
+            }
+          ]
+        }
+      }
+  
+    });
+  }
 
