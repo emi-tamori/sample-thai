@@ -102,11 +102,10 @@ const lineBot = (req,res) => {
       console.log('startTimestamp = ' + startTimestamp);// スタート時間タイムスタンプの形で出力
       console.log('date = ' + date);//11月19日(木) 23:00の形で出力
       console.log('menu = ' + menu);//タイ式（ストレッチ）の形で出力
-      console.log('treattime = ' + treattime);//
       return client.replyMessage(ev.replyToken,{
         "type":"text",
         "wrap": true,
-        "text":`次回予約は\n■■■■■■■■■\n\n${date}~\n${menu}${treattime}分\n\n■■■■■■■■■\nでお取りしてます\uDBC0\uDC22`
+        "text":`次回予約は\n■■■■■■■■■\n\n${date}~\n${menu}\n\n■■■■■■■■■\nでお取りしてます\uDBC0\uDC22`
       });
     }else{
         return client.replyMessage(ev.replyToken,{
