@@ -129,8 +129,12 @@ const lineBot = (req,res) => {
       }else if(nextReservation.length){
         const startTimestamp = parseInt(nextReservation[0].starttime);
         const orderedMenu = nextReservation[0].menu;
+        const menu = MENU[parseInt(nextReservation[0].menu)];
+        const treatTime = nextReservation[0].treattime;
         console.log('startTimestamp = '+startTimestamp);// スタート時間タイムスタンプの形で出力
-        console.log('orderedMenu = '+orderedMenu);// オーターされたメニュー
+        console.log('orderedMenu = '+orderedMenu);// オーターされたメニュー番号で出力
+        console.log('menu = ' + menu);//タイ式（ストレッチ）の形で出力
+        console.log('treatTime = '+treatTime);//60の形で出力
         console.log('次回予約があります');
       }else{
         console.log('次回予約なし');
