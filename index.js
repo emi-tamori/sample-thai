@@ -26,6 +26,7 @@ app
 //初期値設定
 const WEEK = [ "日", "月", "火", "水", "木", "金", "土" ];
 const MENU = ['タイ式（ストレッチ）','タイ式（アロマオイル）','足つぼ'];
+
 //顧客データベース作成
 const create_userTable = {
     text:'CREATE TABLE IF NOT EXISTS users (id SERIAL NOT NULL, line_uid VARCHAR(255), display_name VARCHAR(255), timestamp VARCHAR(255));'
@@ -44,6 +45,7 @@ connection.query(create_reservationTable)
   console.log('table users created successfully!!');
 })
 .catch(e=>console.log(e));
+
 //lineBot関数（イベントタイプによって実行関数を振り分け）
 const lineBot = (req,res) => {
     res.status(200).end();
@@ -108,6 +110,14 @@ const lineBot = (req,res) => {
         "wrap": true,
         "text":`次回予約は\n■■■■■■■■■\n\n${date}~\n${menu}${treatTime}分\n\n■■■■■■■■■\nでお取りしてます\uDBC0\uDC22`
       });
+    }else if(text === '予約キャンセル'){
+      const nextReservation = await checkNextReservation(ev);
+      if(nextReservation.length){
+        console.log('次回予約があります');
+      }else{
+        console.log('次回予約なし');
+      }
+
     }else{
         return client.replyMessage(ev.replyToken,{
             "type":"text",
