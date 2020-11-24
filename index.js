@@ -127,6 +127,8 @@ const lineBot = (req,res) => {
       if(typeof nextReservation === 'undefined'){
         console.log('次回予約なし');
       }else if(nextReservation.length){
+        const startTimestamp = parseInt(nextReservation[0].starttime);
+        console.log('startTimestamp = '+startTimestamp);// スタート時間タイムスタンプの形で出力
         console.log('次回予約があります');
       }else{
         console.log('次回予約なし');
