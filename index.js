@@ -124,12 +124,13 @@ const lineBot = (req,res) => {
       }
     }else if(text === '予約キャンセル'){
       const nextReservation = await checkNextReservation(ev);
-      if(nextReservation.length){
+      if(typeof nextReservation === 'undefined'){
+        console.log('次回予約なし');
+      }else if(nextReservation.length){
         console.log('次回予約があります');
       }else{
         console.log('次回予約なし');
       }
-
     }else{
         return client.replyMessage(ev.replyToken,{
             "type":"text",
