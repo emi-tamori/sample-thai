@@ -131,10 +131,14 @@ const lineBot = (req,res) => {
         const orderedMenu = nextReservation[0].menu;
         const menu = MENU[parseInt(nextReservation[0].menu)];
         const treatTime = nextReservation[0].treattime;
+        const date = dateConversion(startTimestamp);
+        const id = parseInt(nextReservation[0].id);
         console.log('startTimestamp = '+startTimestamp);// スタート時間タイムスタンプの形で出力
         console.log('orderedMenu = '+orderedMenu);// オーターされたメニュー番号で出力
         console.log('menu = ' + menu);//タイ式（ストレッチ）の形で出力
         console.log('treatTime = '+treatTime);//60の形で出力
+        console.log('date = ' + date);//11月19日(木) 23:00の形で出力
+        console.log('id = ' + id);//
         console.log('次回予約があります');
       }else{
         console.log('次回予約なし');
