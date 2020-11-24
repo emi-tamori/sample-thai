@@ -138,12 +138,62 @@ const lineBot = (req,res) => {
         console.log('menu = ' + menu);//タイ式（ストレッチ）の形で出力
         console.log('treatTime = '+treatTime);//60の形で出力
         console.log('date = ' + date);//11月19日(木) 23:00の形で出力
-        console.log('id = ' + id);//
+        console.log('id = ' + id);//5の形で出力
         console.log('次回予約があります');
+        return client.replyMessage(ev.replyToken,{
+          "type":"flex",
+          "altText": "cancel message",
+          "contents":
+          {
+            "type": "bubble",
+            "body": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": `次回の予約は${date}~${menu}${treatTime}分でお取りしてます。この予約をキャンセルしますか？`,
+                  "margin": "md",
+                  "wrap": true
+                }
+              ]
+            },
+            "footer": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "予約をキャンセル",
+                    "data": `delete&${id}`
+                  },
+                  "style": "primary"
+                },
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "終了",
+                    "data": "no"
+                  },
+                  "style": "secondary",
+                  "margin": "md"
+                }
+              ]
+            }
+          }
+        });
       }else{
         console.log('次回予約なし');
       }
-    }else{
+    }else if(splitData[0] === 'no'){
+      return client.replyMessage(ev.replyToken,{
+        "type":"text",
+        "text":`終了します。`
+    });
+  }else{
         return client.replyMessage(ev.replyToken,{
             "type":"text",
             "text":`${profile.displayName}さん\nメッセージありがとうございます。\n\n申し訳ございませんが、このアカウントでは個別の返信をしておりません。\n\n＜お問い合わせ＞\nご質問などお問い合わせは店舗にお願いします。\nhttps://tsukumonetwork.co.jp/`
