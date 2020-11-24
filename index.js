@@ -97,19 +97,26 @@ const lineBot = (req,res) => {
         orderChoice(ev);
     }else if(text === '予約確認'){
       const nextReservation = await checkNextReservation(ev);
-      const startTimestamp = nextReservation[0].starttime;
-      const date = dateConversion(startTimestamp);
-      const menu = MENU[parseInt(nextReservation[0].menu)];
-      const treatTime = nextReservation[0].treattime;
-      console.log('startTimestamp = ' + startTimestamp);// スタート時間タイムスタンプの形で出力
-      console.log('date = ' + date);//11月19日(木) 23:00の形で出力
-      console.log('menu = ' + menu);//タイ式（ストレッチ）の形で出力
-      console.log('treatTime = '+treatTime);//60の形で出力
-      return client.replyMessage(ev.replyToken,{
-        "type":"text",
-        "wrap": true,
-        "text":`次回予約は\n■■■■■■■■■\n\n${date}~\n${menu}${treatTime}分\n\n■■■■■■■■■\nでお取りしてます\uDBC0\uDC22`
-      });
+      if(nextReservation.length){
+        const startTimestamp = nextReservation[0].starttime;
+        const date = dateConversion(startTimestamp);
+        const menu = MENU[parseInt(nextReservation[0].menu)];
+        const treatTime = nextReservation[0].treattime;
+        console.log('startTimestamp = ' + startTimestamp);// スタート時間タイムスタンプの形で出力
+        console.log('date = ' + date);//11月19日(木) 23:00の形で出力
+        console.log('menu = ' + menu);//タイ式（ストレッチ）の形で出力
+        console.log('treatTime = '+treatTime);//60の形で出力
+        return client.replyMessage(ev.replyToken,{
+          "type":"text",
+          "wrap": true,
+          "text":`次回予約は\n■■■■■■■■■\n\n${date}~\n${menu}${treatTime}分\n\n■■■■■■■■■\nでお取りしてます\uDBC0\uDC22`
+        });
+      }else{
+        return client.replyMessage(ev.replyToken,{
+          "type":"text",
+          "text":"次回の予約は入っておりません。"
+        })
+      }
     }else if(text === '予約キャンセル'){
       const nextReservation = await checkNextReservation(ev);
       if(nextReservation.length){
