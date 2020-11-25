@@ -244,8 +244,20 @@ const lineBot = (req,res) => {
         confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
       }else if(splitData[0] === 'delete'){
         const id = parseInt(splitData[1]);
-        console.log('id:' + id);
-
+        console.log('id:' + id);//5の形で出力
+        const deleteQuery = {
+          text:'DELETE FROM reservations WHERE id = $1;',
+          values:[`${id}`]
+        };
+        connection.query(deleteQuery)
+        .then(res=>{
+          console.log('予約キャンセル成功');
+          client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"予約をキャンセルしました。"
+          });
+        })
+        .catch(e=>console.log(e));
       }else if(splitData[0] === 'yes'){
         const orderedMenu = splitData[1];//メニュー取得
         const treatTime = splitData[2];//施術時間を取得
