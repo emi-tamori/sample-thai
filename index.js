@@ -188,12 +188,7 @@ const lineBot = (req,res) => {
       }else{
         console.log('次回予約なし');
       }
-    }else if(splitData[0] === 'no'){
-      return client.replyMessage(ev.replyToken,{
-        "type":"text",
-        "text":`終了します。`
-    });
-  }else{
+    }else{
         return client.replyMessage(ev.replyToken,{
             "type":"text",
             "text":`${profile.displayName}さん\nメッセージありがとうございます。\n\n申し訳ございませんが、このアカウントでは個別の返信をしておりません。\n\n＜お問い合わせ＞\nご質問などお問い合わせは店舗にお願いします。\nhttps://tsukumonetwork.co.jp/`
@@ -247,6 +242,10 @@ const lineBot = (req,res) => {
         console.log('選択した日付'+ selectedDate);//2020-11-17の形で出力
         console.log('来店時間：'+ selectedTime);//0の形で出力(数値)
         confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
+      }else if(splitData[0] === 'delete'){
+        const id = parseInt(splitData[1]);
+        console.log('id:' + id);
+
       }else if(splitData[0] === 'yes'){
         const orderedMenu = splitData[1];//メニュー取得
         const treatTime = splitData[2];//施術時間を取得
@@ -272,9 +271,12 @@ const lineBot = (req,res) => {
         console.log('startTime:',startTimestamp);
         console.log('endTime:',endTimestamp);
       }else if(splitData[0] === 'no'){
-        // あとで何か入れる
-      }
+        return client.replyMessage(ev.replyToken,{
+          "type":"text",
+          "text":`終了します。`
+      });
  }
+}
 //orderChoice関数（メニュー選択）
 const orderChoice = (ev) => {
     return client.replyMessage(ev.replyToken,{
