@@ -190,7 +190,10 @@ const lineBot = (req,res) => {
           }
         });
       }else{
-        console.log('次回予約なし');
+        return client.replyMessage(ev.replyToken,{
+          "type":"text",
+          "text":"次回の予約は入っておりません。"
+        })
       }
     }else{
         return client.replyMessage(ev.replyToken,{
