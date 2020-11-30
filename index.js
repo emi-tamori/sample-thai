@@ -126,6 +126,10 @@ const lineBot = (req,res) => {
       const nextReservation = await checkNextReservation(ev);
       if(typeof nextReservation === 'undefined'){
         console.log('次回予約なし');
+        return client.replyMessage(ev.replyToken,{
+          "type":"text",
+          "text":"次回の予約は入っておりません。"
+        })
       }else if(nextReservation.length){
         const startTimestamp = parseInt(nextReservation[0].starttime);
         const orderedMenu = nextReservation[0].menu;
