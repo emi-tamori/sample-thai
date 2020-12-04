@@ -103,9 +103,44 @@ const lineBot = (req,res) => {
         const menu = MENU[orderedMenu];
         console.log('startTimestamp = ' + startTimestamp);//予約済みの日付タイムスタンプ
         console.log('date = ' + date);//タイムスタンプを文字列の形で出力
-        console.log('orderedMenu = ' + orderedMenu);//0の形で出力(数値)
-        console.log('menu = ' + menu);
-        
+        console.log('orderedMenu = ' + orderedMenu);//メニューのindex数
+        console.log('menu = ' + menu);//メニュー名
+        return client.replyMessage(ev.replyToken,{
+          "type":"flex",
+          "altText": "cancel message",
+          "contents":
+          {
+            "type": "bubble",
+            "body": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": `次回予約は${date}、${menu}でお取りしてます。変更の場合は予約キャンセル後改めて予約をお願いします。`,
+                  "margin": "md",
+                  "wrap": true
+                }
+              ]
+            },
+            "footer": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "終了",
+                    "data": "no"
+                  },
+                  "style": "secondary",
+                  "margin": "md"
+                }
+              ]
+            }
+          }
+        });
       }else{
         orderChoice(ev);
       }
