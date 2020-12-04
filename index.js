@@ -98,11 +98,16 @@ const lineBot = (req,res) => {
       if(nextReservation.length){
         console.log('すでに予約あり');
         const startTimestamp = nextReservation[0].starttime;
+        const date = dateConversion(startTimestamp);
+        const orderedMenu = nextReservation[0].menu;
         console.log('startTimestamp = ' + startTimestamp);
+        console.log('date = ' + date);
+        console.log("orderedMenu = " + orderedMenu);
+        
       }else{
         orderChoice(ev);
       }
-        //orderChoice(ev);
+    //orderChoice(ev);
     }else if(text === '予約確認'){
       const nextReservation = await checkNextReservation(ev);
       if(typeof nextReservation === 'undefined'){
