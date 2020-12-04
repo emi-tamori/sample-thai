@@ -305,6 +305,11 @@ const lineBot = (req,res) => {
           const dayCheck = REGULAR_COLOSE.some(day => day === targetDay);
           console.log('targetDay = ' + targetDay);
           console.log('dayCheck = ' + dayCheck);
+          //定休日でないことの判定
+          if(!dayCheck){
+            const futureLimit = today + FUTURE_LIMIT*24*60*60*1000;
+            console.log('futureLimit = ' + futureLimit);
+          }
         }
 
 
