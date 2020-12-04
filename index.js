@@ -289,7 +289,15 @@ const lineBot = (req,res) => {
 
         //「過去の日にち」、「定休日」、「２ヶ月先」の予約はできないようフィルタリングする
         const today_y = new Date().getFullYear();
-        console.log('today_y = ' + today_y);
+        const today_m = new Date().getMonth() + 1;
+        const today_d = new Date().getDate();
+        const today = new Date(`${today_y}/${today_m}/${today_d} 0:00`).getTime() - 9*60*60*1000;
+        const targetDate = new Date(`${selectedDate} 0:00`).getTime() - 9*60*60*1000;
+        console.log('today_y = ' + today_y);//予約日の年
+        console.log('today_m = ' + today_m);
+        console.log('today_d = ' + today_d);
+        console.log('today = ' + today);
+        console.log('targetDate = ' + targetDate);
 
 
 
