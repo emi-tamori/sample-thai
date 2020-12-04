@@ -286,6 +286,13 @@ const lineBot = (req,res) => {
         console.log('選択したメニユー番号：'+ orderedMenu);//0の形で出力(数値)
         console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
         console.log('選択した日付：'+ selectedDate);//2020-11-17の形で出力
+
+        //「過去の日にち」、「定休日」、「２ヶ月先」の予約はできないようフィルタリングする
+        const today_y = new Date().getFullYear();
+        console.log('today_y = ' + today_y);
+
+
+
         askTime(ev,orderedMenu,treatTime,selectedDate);
       }else if(splitData[0] === 'time'){
         const orderedMenu = splitData[1];//メニュー取得
