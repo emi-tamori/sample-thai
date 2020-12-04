@@ -100,9 +100,11 @@ const lineBot = (req,res) => {
         const startTimestamp = nextReservation[0].starttime;
         const date = dateConversion(startTimestamp);
         const orderedMenu = nextReservation[0].menu;
-        console.log('startTimestamp = ' + startTimestamp);
-        console.log('date = ' + date);
-        console.log("orderedMenu = " + orderedMenu);
+        const menu = MENU[orderedMenu];
+        console.log('startTimestamp = ' + startTimestamp);//予約済みの日付タイムスタンプ
+        console.log('date = ' + date);//タイムスタンプを文字列の形で出力
+        console.log('orderedMenu = ' + orderedMenu);//0の形で出力(数値)
+        console.log('menu = ' + menu);
         
       }else{
         orderChoice(ev);
