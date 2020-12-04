@@ -8,7 +8,7 @@ const connection = new Client({
     host:process.env.PG_HOST,
     database:process.env.PG_DATABASE,
     password:process.env.PG_PASSWORD,
-    port:5432
+    port:5432//★ポート番号
   });
  connection.connect();
 const PORT = process.env.PORT || 5000
@@ -25,7 +25,8 @@ app
    .listen(PORT,()=>console.log(`Listening on ${PORT}`));
 //初期値設定
 const WEEK = [ "日", "月", "火", "水", "木", "金", "土" ];
-const MENU = ['タイ式（ストレッチ）','タイ式（アロマオイル）','足つぼ'];
+const MENU = ['タイ式（ストレッチ）','タイ式（アロマオイル）','足つぼ'];//★メニュー
+const REGULAR_COLOSE = [1]; //★定休日の曜日
 
 //顧客データベース作成
 const create_userTable = {
@@ -293,11 +294,18 @@ const lineBot = (req,res) => {
         const today_d = new Date().getDate();
         const today = new Date(`${today_y}/${today_m}/${today_d} 0:00`).getTime() - 9*60*60*1000;
         const targetDate = new Date(`${selectedDate} 0:00`).getTime() - 9*60*60*1000;
-        console.log('today_y = ' + today_y);//予約日の年
-        console.log('today_m = ' + today_m);
-        console.log('today_d = ' + today_d);
-        console.log('today = ' + today);
-        console.log('targetDate = ' + targetDate);
+        console.log('today_y = ' + today_y);//2020の形現在の年
+        console.log('today_m = ' + today_m);//12の形現在の月
+        console.log('today_d = ' + today_d);//4の形現在の日付
+        console.log('today = ' + today);//現在の日付タイムスタンプ
+        console.log('targetDate = ' + targetDate);//予約日付のタイムスタンプ
+        //選択日が過去でないことの判定
+        if(targetDate>=today){
+          const targetDay = new Date(`${selectedDate}`).getDay();
+          const dayCheck = REGULAR_COLOSE.some(day => day === targetDay);
+          console.log('targetDay = ' + targetDay);
+          console.log('dayCheck = ' + dayCheck);
+        }
 
 
 
