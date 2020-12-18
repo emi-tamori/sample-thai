@@ -344,10 +344,10 @@ const lineBot = (req,res) => {
         console.log('来店時間：'+ selectedTime);//0の形で出力(数値)
 
         //選んだ時間が過去の時間かを判定する
-        const targetDateTime = new Date(`${selectedDate} ${9+parseInt(selectedTime)}:00`).getTime() - 9*60*60*1000;
+        const targetDateTime = new Date(`${selectedDate} ${12+parseInt(selectedTime)}:00`).getTime() - 9*60*60*1000;//★開店時間を設置ずる${12+parseIntの12部分
         const nowTime = new Date().getTime();
-        console.log('targetDateTime:',targetDateTime);
-        console.log('nowTime:',nowTime);
+        console.log('targetDateTime:',targetDateTime);//選んだ日時タイムスタンプの形で出力
+        console.log('nowTime:',nowTime);//現在の日時タイムスタンプの形で出力
 
         confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
       }else if(splitData[0] === 'delete'){
