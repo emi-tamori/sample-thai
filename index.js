@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const line = require('@line/bot-sdk');
 const { Client } = require('pg');
+const e = require('express');
 const connection = new Client({
     user:process.env.PG_USER,
     host:process.env.PG_HOST,
@@ -870,7 +871,23 @@ const askDate = (ev,orderedMenu,treatTime) => {
     });
 }
 //askTime関数(時間帯を選択)
-const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
+const askTime = (ev,orderedMenu,treatTime,selectedDate,reservableArray) => {
+  const time = [];
+  const color = [];
+  //予約時間帯とボタン色配列を生成
+  for(let i=0; i<CLOSETIME-OPENTIME; i++){
+    let count = 0;
+    for(let j=0; j<reservableArray.length; j++){
+      if(reservableArray[j][i].length) count++;
+    }
+    if(count>0){
+      time.push(i);
+      color.push('#00AA00');
+    }else{
+      time.push(-1);
+      color.push('#FF0000');
+    }
+  }
     return client.replyMessage(ev.replyToken,{
       "type":"flex",
       "altText":"予約日選択",
@@ -921,9 +938,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "12時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&0`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[0]}`
                   },
                   "style": "primary",
+                  "color": `${color[0]}`,
                   "margin": "md"
                 },
                 {
@@ -931,9 +949,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "13時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&1`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[1]}`
                   },
                   "style": "primary",
+                  "color": `${color[1]}`,
                   "margin": "md"
                 },
                 {
@@ -941,9 +960,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "14時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&2`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[2]}`
                   },
                   "style": "primary",
+                  "color": `${color[2]}`,
                   "margin": "md"
                 }
               ]
@@ -957,9 +977,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "15時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&3`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[3]}`
                   },
                   "margin": "md",
+                  "color": `${color[3]}`,
                   "style": "primary"
                 },
                 {
@@ -967,9 +988,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "16時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&4`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[4]}`
                   },
                   "margin": "md",
+                  "color": `${color[4]}`,
                   "style": "primary"
                 },
                 {
@@ -977,9 +999,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "17時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&5`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[5]}`
                   },
                   "margin": "md",
+                  "color": `${color[5]}`,
                   "style": "primary"
                 }
               ],
@@ -994,9 +1017,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "18時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&6`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[6]}`
                   },
                   "margin": "md",
+                  "color": `${color[6]}`,
                   "style": "primary"
                 },
                 {
@@ -1004,9 +1028,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "19時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&7`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[7]}`
                   },
                   "margin": "md",
+                  "color": `${color[7]}`,
                   "style": "primary"
                 },
                 {
@@ -1014,9 +1039,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "20時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&8`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[8]}`
                   },
                   "margin": "md",
+                  "color": `${color[8]}`,
                   "style": "primary"
                 }
               ],
@@ -1031,9 +1057,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "21時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&9`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[9]}`
                   },
                   "margin": "md",
+                  "color": `${color[9]}`,
                   "style": "primary"
                 },
                 {
@@ -1041,9 +1068,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "22時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&10`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[10]}`
                   },
                   "margin": "md",
+                  "color": `${color[10]}`,
                   "style": "primary"
                 },
                 {
@@ -1051,9 +1079,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "23時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&11`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[11]}`
                   },
                   "margin": "md",
+                  "color": `${color[11]}`,
                   "style": "primary"
                 }
               ],
@@ -1068,9 +1097,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "終了",
-                    "data": "hello"
+                    "data": "cancel"
                   },
                   "margin": "md",
+                  "color": "#999999",
                   "style": "secondary"
                 }
               ],
@@ -1158,6 +1188,137 @@ const checkNextReservation = (ev) => {
       .catch(e=>console.log(e));
   });
  }
+ //checkReservable関数（予約可能な時間をチェックする）
+const checkReservable = (ev,menu,date,num) => {
+  return new Promise( async (resolve,reject)=>{
+    const id = ev.source.userId;
+    const splitData = data.split('&');
+    const treatTime = splitData[2];//施術時間を取得
+    const treatTimeToMs = treatTime*60*1000;// 施術時間をミリ秒に変換
+
+    const select_query = {
+      text:`SELECT * FROM reservations.${STAFFS[num]} WHERE scheduledate = $1 ORDER BY starttime ASC;`,
+      values:[`${date}`]
+    };
+
+    connection.query(select_query)
+    .then(res=>{
+      console.log('res.rows:',res.rows);
+      const reservedArray = res.rows.map(object=>{
+        return [parseInt(object.starttime),parseInt(object.endtime)];
+      });
+      console.log('reservedArray:',reservedArray);
+
+      //各時間のタイムスタンプ
+      // herokuサーバー基準なので、日本の時刻は９時間分進んでしまうため、引く
+      const timeStamps = [];
+      for(let i=OPENTIME; i<CLOSETIME+1; i++){
+        timeStamps.push(new Date(`${date} ${i}:00`).getTime()-9*60*60*1000);
+      }
+      console.log('timestamps',timeStamps);
+      //この日の予約を各時間帯に関する予約へ分割し、それを3次元配列に格納していく。
+      const separatedByTime = [];
+      for(let i=0; i<CLOSETIME-OPENTIME; i++){
+        const tempArray = [];
+        reservedArray.forEach(array=>{
+          //パターン0
+          if(array[0]<=timeStamps[i] && (array[1]>timeStamps[i] && array[1]<timeStamps[i+1])){
+            tempArray.push(array.concat([0]));
+          }
+          //パターン１
+          else if((array[0]>timeStamps[i] && array[0]<timeStamps[i+1]) && array[1]>=timeStamps[i+1]){
+            tempArray.push(array.concat([1]));
+          }
+          //パターン２
+          else if((array[0]>timeStamps[i] && array[0]<timeStamps[i+1])&&(array[1]>array[0] && array[1]<timeStamps[i+1])){
+            tempArray.push(array.concat([2]));
+          }
+          //パターン３
+          else if(array[0]<=timeStamps[i] && array[1]>=timeStamps[i+1]){
+            tempArray.push(array.concat([3]));
+          }
+        });
+        separatedByTime.push(tempArray);
+      }
+      //ある時間帯の最後の要素がパターン0とパターン2の場合、次の時間帯の最初の要素を加える
+      for(let i=0; i<separatedByTime.length; i++){
+        //対象時間帯の予約が存在し、かつ最後の時間帯でない場合
+        if(separatedByTime[i].length && i !== separatedByTime.length-1){
+          //次の時間帯の予約が存在する場合
+          if(separatedByTime[i+1].length){
+            //パターン0,2の場合は、次の時間帯の最初の予約のstarttimeを加える
+            const l = separatedByTime[i].length - 1;
+            const pattern = separatedByTime[i][l][2];
+            if(pattern === 0 || pattern === 2) separatedByTime[i].push(separatedByTime[i+1][0]);
+          }else{
+            //次の時間帯に予約が入っていなければとりあえず、timeStamps[i]から1時間+treatTime分のタイムスタンプを格納
+            separatedByTime[i].push([timeStamps[i]+60*60*1000+treatTimeToMs]);
+          }
+        }
+        //対象時間帯の予約が存在し、かつ最後の時間帯の場合（separatedByTime[i+1]を検知できないため特別扱いする）
+        else if(separatedByTime[i].length && i === separatedByTime.length-1){
+          const l = separatedByTime[i].length - 1;
+          const pattern = separatedByTime[i][l][2];
+          if(pattern === 0 || pattern === 2) separatedByTime[i].push([timeStamps[i] + 60*60*1000 + treatTimeToMs]);
+        }
+      }
+      //予約と予約の間隔を格納する3次元配列を生成する
+      const intervalArray = [];
+      for(let i=0; i<separatedByTime.length; i++){
+        //時間帯に予約が入っている場合
+        if(separatedByTime[i].length){
+          //separatedByTime[i]の先頭のパターンを取得
+          const pattern = separatedByTime[i][0][2];
+          //パターン0,2の場合
+          if(pattern === 0 || pattern === 2){
+            const tempArray = [];
+            for(let j=0; j<separatedByTime[i].length-1; j++){
+              tempArray.push([separatedByTime[i][j+1][0]-separatedByTime[i][j][1], separatedByTime[i][j][1]]);
+            }
+            console.log('temparray in 0 or 2:',tempArray);
+            intervalArray.push(tempArray);
+          }else if(pattern === 1){
+            intervalArray.push([[separatedByTime[i][0][0]-timeStamps[i],timeStamps[i]]]);
+          }else if(pattern === 3){
+            intervalArray.push([]);
+          }
+        }else if(i<separatedByTime.length-1 && separatedByTime[i+1].length){
+          intervalArray.push([[separatedByTime[i+1][0][0] - timeStamps[i],timeStamps[i]]]);
+        }else{
+          intervalArray.push([[60*60*1000+treatTime*60*1000,timeStamps[i]]]);
+        }
+      }
+      //reservableArrayを生成
+      const reservableArray = [];
+      intervalArray.forEach(array2=>{
+        const tempArray = [];
+        array2.forEach(array=>{
+          let interval = array[0];
+          let target = array[1];
+          while(interval>treatTimeToMs){
+            tempArray.push(target);
+            interval -= treatTimeToMs;
+            target += treatTimeToMs;
+          }
+        });
+        eservableArray.push(tempArray);
+      });
+      //シフトによりマスキング
+      const shift = SHIFT1[`${STAFFS[num]}`];
+      console.log('shift = ' + shift);
+      const filteredArray = [];
+      reservableArray.forEach((value,index) => {
+        if(shift[index]){
+          filteredArray.push(value);
+        }else{
+          filteredArray.push([]);
+        }
+      });
+      resolve(filteredArray);
+    })
+    .catch(e=>console.log(e));
+  });
+}
 //timeConversion関数（選択日と選択時間使ってタイムスタンプ形式へ変換）
 const timeConversion = (date,time) => {
     const selectedTime = 12 + parseInt(time) - 9;
@@ -1173,3 +1334,4 @@ const dateConversion = (timestamp) => {
   const min = ('0' + d.getMinutes()).slice(-2);
   return `${month}月${date}日(${WEEK[day]}) ${hour}:${min}`;
  }
+
