@@ -28,6 +28,8 @@ app
 const WEEK = [ "日", "月", "火", "水", "木", "金", "土" ];
 const MENU = ['タイ式（ストレッチ）','タイ式（アロマオイル）','足つぼ'];//★メニュー
 const REGULAR_COLOSE = [1]; //★定休日の曜日
+const OPENTIME = 12;//★開店時間
+const CLOSETIME = 23;//★閉店時間
 const FUTURE_LIMIT = 3; //★何日先まで予約可能かの上限
 
 //顧客データベース作成
