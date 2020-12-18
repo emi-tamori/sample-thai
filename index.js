@@ -289,7 +289,7 @@ const lineBot = (req,res) => {
         console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
         console.log('選択した日付：'+ selectedDate);//2020-11-17の形で出力
 
-        //「過去の日にち」、「定休日」、「２ヶ月先」の予約はできないようフィルタリングする
+        //「過去の日にち」、「定休日」、「３日先」の予約はできないようフィルタリングする
         const today_y = new Date().getFullYear();
         const today_m = new Date().getMonth() + 1;
         const today_d = new Date().getDate();
@@ -317,25 +317,21 @@ const lineBot = (req,res) => {
             }else{
               return client.replyMessage(ev.replyToken,{
                 "type":"text",
-                "text":`${FUTURE_LIMIT}日より先の予約はできません\uDBC0\uDB17`
+                "text":`${FUTURE_LIMIT}日より先の予約はできません。`
               });
             }
           }else{
             return client.replyMessage(ev.replyToken,{
               "type":"text",
-              "text":"定休日には予約できません\uDBC0\uDB17"
+              "text":"定休日には予約できません。"
             });
           }
         }else{
           return client.replyMessage(ev.replyToken,{
             "type":"text",
-            "text":"過去の日にちには予約できません\uDBC0\uDB17"
+            "text":"過去の日にちには予約できません。"
           });
         }
-
-
-
-        
       }else if(splitData[0] === 'time'){
         const orderedMenu = splitData[1];//メニュー取得
         const treatTime = splitData[2];//施術時間を取得
@@ -816,6 +812,12 @@ const askDate = (ev,orderedMenu,treatTime) => {
           "type": "box",
           "layout": "vertical",
           "contents": [
+            {
+              "type": "text",
+              "text": `定休日：月曜日\n3日以内以内のみご予約できます`,
+              "align": "center",
+              "wrap": true
+            },
             {
               "type": "separator",
               "margin": "md"
