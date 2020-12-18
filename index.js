@@ -814,7 +814,7 @@ const askDate = (ev,orderedMenu,treatTime) => {
           "contents": [
             {
               "type": "text",
-              "text": `定休日：月曜日\n本日より3日間以内のご予約ができます。`,
+              "text": `定休日：月曜日\n本日より3日以内のご予約ができます`,
               "align": "center",
               "wrap": true
             },
