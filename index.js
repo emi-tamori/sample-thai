@@ -31,6 +31,17 @@ const REGULAR_COLOSE = [1]; //★定休日の曜日
 const OPENTIME = 12;//★開店時間
 const CLOSETIME = 23;//★閉店時間
 const FUTURE_LIMIT = 3; //★何日先まで予約可能かの上限
+const STAFFS = ['A','B','C'];//★スタッフを設定
+//★初期シフト
+const SHIFT1 = {
+  A:[0,0,0,0,0,0,0,0,0,1],
+  B:[1,1,1,1,1,1,1,1,1,1],
+  C:[0,1,1,1,0,0,0,0,0,0]
+};
+//★メールアドレス設定
+
+//LINEid設定
+
 
 //顧客データベース作成
 const create_userTable = {
@@ -50,6 +61,15 @@ connection.query(create_reservationTable)
   console.log('table users created successfully!!');
 })
 .catch(e=>console.log(e));
+//スタッフごとの予約テーブルの作成
+STAFFS.forEach(name=>{
+  const create_table = {
+    text:`CREATE TABLE IF NOT EXISTS reservations.${name} (id SERIAL NOT NULL, line_uid VARCHAR(100), name VARCHAR(100), scheduledate DATE, starttime BIGINT, endtime BIGINT, menu VARCHAR(20));`
+  };
+  connection.query(create_table)
+  .then(()=>console.log(`${name}'s table created successfully`))
+  .catch(e=>console.log(e));
+});
 
 //lineBot関数（イベントタイプによって実行関数を振り分け）
 const lineBot = (req,res) => {
@@ -316,7 +336,14 @@ const lineBot = (req,res) => {
             console.log('futureLimit = ' + futureLimit);
             //予約可能日上限を判定
             if(targetDate <= futureLimit){
-              askTime(ev,orderedMenu,treatTime,selectedDate);
+              //スタッフ人数分のreservableArrayを取得
+              const reservableArray = [];
+              for (let i = 0; i < STAFFS.length; i++) {
+                const staff_reservable = await checkReservable(ev,orderedMenu,selectedDate,i);
+                reservableArray.push(staff_reservable);
+              }
+              console.log('reservableArray=',reservableArray);
+              askTime(ev,orderedMenu,treatTime,selectedDate,reservableArray);
             }else{
               return client.replyMessage(ev.replyToken,{
                 "type":"text",
@@ -353,15 +380,21 @@ const lineBot = (req,res) => {
         console.log('nowTime:',nowTime);//現在の日時タイムスタンプの形で出力
       
         if(targetDateTime>nowTime){
-          confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
+          //予約不可の時間帯は-1が返ってくるためそれを条件分岐
+          if(selectedTime >= 0){
+            confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime,0);
+          }else{
+            return client.replyMessage(ev.replyToken,{
+              "type":"text",
+              "text":"申し訳ありません。この時間帯には予約可能な時間がありません><;"
+            });
+          }
         }else{
           return client.replyMessage(ev.replyToken,{
             "type":"text",
             "text":"過去の時間は選べません"
           });
-        }
-
-        
+        }        
       }else if(splitData[0] === 'delete'){
         const id = parseInt(splitData[1]);
         console.log('id:' + id);//5の形で出力
@@ -382,32 +415,58 @@ const lineBot = (req,res) => {
         const orderedMenu = splitData[1];//メニュー取得
         const treatTime = splitData[2];//施術時間を取得
         const selectedDate = splitData[3];//来店日取得
-        const selectedTime = splitData[4];//来店時間取得
-        const startTimestamp = timeConversion(selectedDate,selectedTime);//スタート日時をタイムスタンプ形式形式で取得
-        //const treatTime = calcTreatTime(ev.source.userId,orderedMenu);//施術時間を取得
-        const endTimestamp = startTimestamp + treatTime*60*1000;//施術終了時間を取得
-        const insertQuery = {
-          text:'INSERT INTO reservations (line_uid, name, scheduledate, starttime, endtime, menu, treattime) VALUES($1,$2,$3,$4,$5,$6,$7);',
-          values:[ev.source.userId,profile.displayName,selectedDate,startTimestamp,endTimestamp,orderedMenu,treatTime]
-        };
-        connection.query(insertQuery)
+        const fixedTime = parseInt(splitData[4]);//来店時間取得
+        const staffNumber = parseInt(splitData[5]);
+
+        //予約日時の表記取得
+        const date = dateConversion(fixedTime);
+        //予約完了時間の計算
+        const endTime = fixedTime + treatTime*60*1000;
+        //予約確定前の最終チェック→予約ブッキング無しfalse、予約ブッキングありtrue
+        const check = await finalCheck(selectedDate,fixedTime,endTime,staffNumber);
+
+        if(!check){
+          const insertQuery = {
+            text:'INSERT INTO reservations (line_uid, name, scheduledate, starttime, endtime, menu, treattime) VALUES($1,$2,$3,$4,$5,$6,$7);',
+            values:[ev.source.userId,profile.displayName,selectedDate,startTimestamp,endTimestamp,orderedMenu,treatTime]
+          };
+          connection.query(insertQuery)
           .then(res=>{
-            console.log('予約データ格納成功！');
+            console.log('データ格納成功！');
             client.replyMessage(ev.replyToken,{
               "type":"text",
-              "wrap": true,
-              "text":"予約が完了しました。\nご来店お待ちしております\uDBC0\uDC05"
+              "text":`${date}に${menu}でご予約をお取りしたました\nご来店お待ちしております\uDBC0\uDC05`
             });
+            //Gmail送信設定
+
           })
           .catch(e=>console.log(e));
-        console.log('startTime:',startTimestamp);
-        console.log('endTime:',endTimestamp);
+        }else{
+          return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"先に予約を取られてしまいました><; 申し訳ありませんが、再度別の時間で予約を取ってください。"
+          });
+        }
       }else if(splitData[0] === 'no'){
+        const orderedMenu = splitData[1];
+        const treatTime = splitData[2];//施術時間を取得
+        const selectedDate = splitData[3];//来店日取得
+        const selectedTime = parseInt(splitData[4]);//来店時間取得
+        const num = parseInt(splitData[5]);
+        if(num === -1){
+          return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"申し訳ありません。この時間帯には予約可能な時間がありません><;"
+          });
+        }else{
+          confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime,num);
+        }
+      }else if(splitData[0] === 'cancel'){
         return client.replyMessage(ev.replyToken,{
-          "type":"text",
-          "text":`終了します。`
+        "type":"text",
+        "text":`終了します。`
       });
- }
+    }
 }
 //orderChoice関数（メニュー選択）
 const orderChoice = (ev) => {
