@@ -305,8 +305,8 @@ const lineBot = (req,res) => {
         if(targetDate>=today){
           const targetDay = new Date(`${selectedDate}`).getDay();
           const dayCheck = REGULAR_COLOSE.some(day => day === targetDay);
-          console.log('targetDay = ' + targetDay);
-          console.log('dayCheck = ' + dayCheck);
+          console.log('targetDay = ' + targetDay);//
+          console.log('dayCheck = ' + dayCheck);//trueかfalse
           //定休日でないことの判定
           if(!dayCheck){
             const futureLimit = today + FUTURE_LIMIT*24*60*60*1000;
@@ -342,6 +342,13 @@ const lineBot = (req,res) => {
         console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
         console.log('選択した日付'+ selectedDate);//2020-11-17の形で出力
         console.log('来店時間：'+ selectedTime);//0の形で出力(数値)
+
+        //選んだ時間が過去の時間かを判定する
+        const targetDateTime = new Date(`${selectedDate} ${9+parseInt(selectedTime)}:00`).getTime() - 9*60*60*1000;
+        const nowTime = new Date().getTime();
+        console.log('targetDateTime:',targetDateTime);
+        console.log('nowTime:',nowTime);
+
         confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
       }else if(splitData[0] === 'delete'){
         const id = parseInt(splitData[1]);
@@ -814,7 +821,7 @@ const askDate = (ev,orderedMenu,treatTime) => {
           "contents": [
             {
               "type": "text",
-              "text": `定休日：月曜日\n本日より3日以内のご予約ができます`,
+              "text": `定休日：月曜日\n本日より3日以内のご予約ができます`,//★定休日と予約日上限
               "align": "center",
               "wrap": true
             },
