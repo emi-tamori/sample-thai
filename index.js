@@ -306,7 +306,7 @@ const lineBot = (req,res) => {
           const targetDay = new Date(`${selectedDate}`).getDay();
           const dayCheck = REGULAR_COLOSE.some(day => day === targetDay);
           console.log('targetDay = ' + targetDay);//
-          console.log('dayCheck = ' + dayCheck);//trueかfalse
+          console.log('dayCheck = ' + dayCheck);//trueかfalse（定休日ならtrue）
           //定休日でないことの判定
           if(!dayCheck){
             const futureLimit = today + FUTURE_LIMIT*24*60*60*1000;
@@ -348,8 +348,17 @@ const lineBot = (req,res) => {
         const nowTime = new Date().getTime();
         console.log('targetDateTime:',targetDateTime);//選んだ日時タイムスタンプの形で出力
         console.log('nowTime:',nowTime);//現在の日時タイムスタンプの形で出力
+      
+        if(targetDateTime>nowTime){
+          confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
+        }else{
+          return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"過去の時間は選べません"
+          });
+        }
 
-        confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
+        
       }else if(splitData[0] === 'delete'){
         const id = parseInt(splitData[1]);
         console.log('id:' + id);//5の形で出力
