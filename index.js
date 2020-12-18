@@ -317,19 +317,19 @@ const lineBot = (req,res) => {
             }else{
               return client.replyMessage(ev.replyToken,{
                 "type":"text",
-                "text":`${FUTURE_LIMIT}日より先の予約はできません。`
+                "text":`本日より${FUTURE_LIMIT}日以上先のご予約はできません。`
               });
             }
           }else{
             return client.replyMessage(ev.replyToken,{
               "type":"text",
-              "text":"定休日には予約できません。"
+              "text":"定休日にはご予約できません。"
             });
           }
         }else{
           return client.replyMessage(ev.replyToken,{
             "type":"text",
-            "text":"過去の日にちには予約できません。"
+            "text":"過去の日にちにはご予約できません。"
           });
         }
       }else if(splitData[0] === 'time'){
