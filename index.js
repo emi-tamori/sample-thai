@@ -300,6 +300,7 @@ const lineBot = (req,res) => {
         console.log('today_d = ' + today_d);//4の形現在の日付
         console.log('today = ' + today);//現在の日付タイムスタンプ
         console.log('targetDate = ' + targetDate);//予約日付のタイムスタンプ
+
         //選択日が過去でないことの判定
         if(targetDate>=today){
           const targetDay = new Date(`${selectedDate}`).getDay();
@@ -310,12 +311,31 @@ const lineBot = (req,res) => {
           if(!dayCheck){
             const futureLimit = today + FUTURE_LIMIT*24*60*60*1000;
             console.log('futureLimit = ' + futureLimit);
+            //予約可能日上限を判定
+            if(targetDate <= futureLimit){
+              askTime(ev,orderedMenu,treatTime,selectedDate);
+            }else{
+              return client.replyMessage(ev.replyToken,{
+                "type":"text",
+                "text":`${FUTURE_LIMIT}日より先の予約はできません\uDBC0\uDB17`
+              });
+            }
+          }else{
+            return client.replyMessage(ev.replyToken,{
+              "type":"text",
+              "text":"定休日には予約できません\uDBC0\uDB17"
+            });
           }
+        }else{
+          return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"過去の日にちには予約できません\uDBC0\uDB17"
+          });
         }
 
 
 
-        askTime(ev,orderedMenu,treatTime,selectedDate);
+        
       }else if(splitData[0] === 'time'){
         const orderedMenu = splitData[1];//メニュー取得
         const treatTime = splitData[2];//施術時間を取得
