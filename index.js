@@ -25,7 +25,12 @@ app
    .listen(PORT,()=>console.log(`Listening on ${PORT}`));
 //初期値設定
 const WEEK = [ "日", "月", "火", "水", "木", "金", "土" ];
-const MENU = ['タイ式（ストレッチ）','タイ式（アロマオイル）','足つぼ'];
+const MENU = ['タイ式（ストレッチ）','タイ式（アロマオイル）','足つぼ'];//★メニュー
+const REGULAR_COLOSE = [1]; //★定休日の曜日
+const OPENTIME = 12;//★開店時間
+const CLOSETIME = 23;//★閉店時間
+const FUTURE_LIMIT = 3; //★何日先まで予約可能かの上限
+const STAFFS = ['A','B','C'];//★スタッフを設定
 
 //顧客データベース作成
 const create_userTable = {
@@ -286,7 +291,75 @@ const lineBot = (req,res) => {
         console.log('選択したメニユー番号：'+ orderedMenu);//0の形で出力(数値)
         console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
         console.log('選択した日付：'+ selectedDate);//2020-11-17の形で出力
-        askTime(ev,orderedMenu,treatTime,selectedDate);
+
+         //「過去の日にち」、「定休日」、「３日先」の予約はできないようフィルタリングする
+         const today_y = new Date().getFullYear();
+         const today_m = new Date().getMonth() + 1;
+         const today_d = new Date().getDate();
+         const today = new Date(`${today_y}/${today_m}/${today_d} 0:00`).getTime() - 9*60*60*1000;
+         const targetDate = new Date(`${selectedDate} 0:00`).getTime() - 9*60*60*1000;
+         console.log('today_y = ' + today_y);//2020の形現在の年
+         console.log('today_m = ' + today_m);//12の形現在の月
+         console.log('today_d = ' + today_d);//4の形現在の日付
+         console.log('today = ' + today);//現在の日付タイムスタンプ
+         console.log('targetDate = ' + targetDate);//予約日付のタイムスタンプ
+
+         //選択日が過去でないことの判定
+         if(targetDate>=today){
+          const targetDay = new Date(`${selectedDate}`).getDay();
+          const dayCheck = REGULAR_COLOSE.some(day => day === targetDay);
+          console.log('targetDay = ' + targetDay);//
+          console.log('dayCheck = ' + dayCheck);//trueかfalse（定休日ならtrue）
+          //定休日でないことの判定
+          if(!dayCheck){
+            const futureLimit = today + FUTURE_LIMIT*24*60*60*1000;
+            console.log('futureLimit = ' + futureLimit);
+            //予約可能日上限を判定
+            if(targetDate <= futureLimit){
+              askTime(ev,orderedMenu,treatTime,selectedDate);
+            }else{
+              return client.replyMessage(ev.replyToken,{
+                "type":"text",
+                "text":`本日より${FUTURE_LIMIT}日以上先のご予約はできません。`
+              });
+            }
+          }else{
+            return client.replyMessage(ev.replyToken,{
+              "type":"text",
+              "text":"定休日にはご予約できません。"
+            });
+          }
+        }else{
+          return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"過去の日にちにはご予約できません。"
+          });
+        }
+      }else if(splitData[0] === 'time'){
+        const orderedMenu = splitData[1];//メニュー取得
+        const treatTime = splitData[2];//施術時間を取得
+        const selectedDate = splitData[3];//来店日取得
+        const selectedTime = splitData[4];//来店時間取得
+        console.log('timeのsplitData = ', splitData);//[ 'time', '0', '30', '2020-11-17', '0' ]の形で出力
+        console.log('選択したメニユー番号：'+ orderedMenu);//0の形で出力(数値)
+        console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
+        console.log('選択した日付'+ selectedDate);//2020-11-17の形で出力
+        console.log('来店時間：'+ selectedTime);//0の形で出力(数値)
+
+        //選んだ時間が過去の時間かを判定する
+        const targetDateTime = new Date(`${selectedDate} ${12+parseInt(selectedTime)}:00`).getTime() - 9*60*60*1000;//★開店時間を設置ずる${12+parseIntの12部分
+        const nowTime = new Date().getTime();
+        console.log('targetDateTime:',targetDateTime);//選んだ日時タイムスタンプの形で出力
+        console.log('nowTime:',nowTime);//現在の日時タイムスタンプの形で出力
+      
+        if(targetDateTime>nowTime){
+          confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
+        }else{
+          return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"過去の時間は選べません"
+          });
+        }
       }else if(splitData[0] === 'time'){
         const orderedMenu = splitData[1];//メニュー取得
         const treatTime = splitData[2];//施術時間を取得
