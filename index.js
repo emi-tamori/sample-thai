@@ -132,7 +132,7 @@ const lineBot = (req,res) => {
                   "action": {
                     "type": "postback",
                     "label": "終了",
-                    "data": "no"
+                    "data": "cancel"
                   },
                   "style": "secondary",
                 }
@@ -229,7 +229,7 @@ const lineBot = (req,res) => {
                   "action": {
                     "type": "postback",
                     "label": "終了",
-                    "data": "no"
+                    "data": "cancel"
                   },
                   "style": "secondary",
                   "margin": "md"
@@ -339,12 +339,14 @@ const lineBot = (req,res) => {
         console.log('startTime:',startTimestamp);
         console.log('endTime:',endTimestamp);
       }else if(splitData[0] === 'no'){
-        return client.replyMessage(ev.replyToken,{
-          "type":"text",
-          "text":`終了します。`
-      });
- }
-}
+        //後で設定
+      }else if(splitData[0] === 'cancel'){
+      return client.replyMessage(ev.replyToken,{
+        "type":"text",
+        "text":`終了します。`
+    });
+      }
+  }
 //orderChoice関数（メニュー選択）
 const orderChoice = (ev) => {
     return client.replyMessage(ev.replyToken,{
@@ -1001,7 +1003,7 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "終了",
-                    "data": "hello"
+                    "data": "cancel"
                   },
                   "margin": "md",
                   "style": "secondary"
