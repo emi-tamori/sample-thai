@@ -10,7 +10,7 @@ const connection = new Client({
     password:process.env.PG_PASSWORD,
     port:5432
   });
- connection.connect();
+  connection.connect();
 const PORT = process.env.PORT || 5000
 
 const config = {
@@ -94,7 +94,56 @@ const lineBot = (req,res) => {
     const text = (ev.message.type === 'text') ? ev.message.text : '';
     
     if(text === '予約する'){
+      const nextReservation = await checkNextReservation(ev);
+      if(nextReservation.length){
+        console.log('すでに予約あり');
+        const startTimestamp = nextReservation[0].starttime;
+        const date = dateConversion(startTimestamp);
+        const orderedMenu = nextReservation[0].menu;
+        const menu = MENU[orderedMenu];
+        console.log('startTimestamp = ' + startTimestamp);//予約済みの日付タイムスタンプ
+        console.log('date = ' + date);//タイムスタンプを文字列の形で出力
+        console.log('orderedMenu = ' + orderedMenu);//メニューのindex数
+        console.log('menu = ' + menu);//メニュー名
+        return client.replyMessage(ev.replyToken,{
+          "type":"flex",
+          "altText": "cancel message",
+          "contents":
+          {
+            "type": "bubble",
+            "body": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "text",
+                  "text": `次回ご予約は${date}\n${menu}でお取りしてます。変更の場合はキャンセル後改めてご予約をお願いします。`,
+                  "margin": "md",
+                  "wrap": true
+                }
+              ]
+            },
+            "footer": {
+              "type": "box",
+              "layout": "vertical",
+              "contents": [
+                {
+                  "type": "button",
+                  "action": {
+                    "type": "postback",
+                    "label": "終了",
+                    "data": "no"
+                  },
+                  "style": "secondary",
+                }
+              ]
+            }
+          }
+        });
+      }else{
         orderChoice(ev);
+      }
+    //orderChoice(ev);
     }else if(text === '予約確認'){
       const nextReservation = await checkNextReservation(ev);
       if(typeof nextReservation === 'undefined'){
