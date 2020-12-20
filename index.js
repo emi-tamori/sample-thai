@@ -1389,5 +1389,46 @@ const timeConversion = (date,time) => {
     const selectedTime = 12 + parseInt(time) - 9;
     return new Date(`${date} ${selectedTime}:00`).getTime();
 }
+//finalCheck関数
+const finalCheck = (date,startTime,endTime,staffNumber) => {
+  return new Promise((resolve,reject) => {
+    const select_query = {
+      text:`SELECT * FROM reservations.${STAFFS[staffNumber]} WHERE scheduledate = '${date}';`
+    }
+    connection.query(select_query)
+      .then(res=>{
+        if(res.rows.length){
+          const check = res.rows.some(object=>{
+            return ((startTime>object.starttime && startTime<object.endtime)
+            || (startTime<=object.starttime && endTime>=object.endtime)
+            || (endTime>object.starttime && endTime<object.endtime));
+          });
+          resolve(check);
+        }else{
+          resolve(false);
+        }
+      })
+      .catch(e=>console.log(e));
+  });
+}
+//予約選択日における各スタッフの予約数を取得する
+const getNumberOfReservations = (date) => { 
+  return new Promise((resolve,reject) => {
+    const numberOfReservations = [];
+    for(let i=0; i<STAFFS.length; i++){
+      const select_query = {
+        text:`SELECT * FROM reservations.${STAFFS[i]} WHERE scheduledate = $1 ORDER BY starttime ASC;`,
+        values:[`${date}`]
+      }
+      connection.query(select_query)
+        .then(res=>{
+          console.log('res.rows.length=',res.rows.length);
+          numberOfReservations.push(res.rows.length);
+          if(i === STAFFS.length - 1) resolve(numberOfReservations);
+        })
+        .catch(e=>console.log(e));
+    }
+  })
+}
 
 
