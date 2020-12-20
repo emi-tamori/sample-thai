@@ -50,14 +50,23 @@ const create_userTable = {
    })
    .catch(e=>console.log(e));
 //予約データベースの作成
-const create_reservationTable = {
+/*const create_reservationTable = {
   text:'CREATE TABLE IF NOT EXISTS reservations (id SERIAL NOT NULL, line_uid VARCHAR(255), name VARCHAR(100), scheduledate DATE, starttime BIGINT, endtime BIGINT, menu VARCHAR(50),treattime BIGINT);'
 };
 connection.query(create_reservationTable)
 .then(()=>{
   console.log('table users created successfully!!');
 })
-.catch(e=>console.log(e));
+.catch(e=>console.log(e));*/
+//スタッフごとの予約テーブルの作成
+STAFFS.forEach(name=>{
+  const create_table = {
+    text:`CREATE TABLE IF NOT EXISTS reservations.${name} (id SERIAL NOT NULL, line_uid VARCHAR(100), name VARCHAR(100), scheduledate DATE, starttime BIGINT, endtime BIGINT, menu VARCHAR(20));`
+  };
+  connection.query(create_table)
+  .then(()=>console.log(`${name}'s table created successfully`))
+  .catch(e=>console.log(e));
+})
 
 //lineBot関数（イベントタイプによって実行関数を振り分け）
 const lineBot = (req,res) => {
