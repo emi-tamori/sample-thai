@@ -32,6 +32,14 @@ const CLOSETIME = 23;//★閉店時間
 const FUTURE_LIMIT = 3; //★何日先まで予約可能かの上限
 const STAFFS = ['A','B','C'];//★スタッフを設定
 
+//★初期シフト
+const SHIFT1 = {
+  A:[0,0,0,0,0,0,0,0,0,1],
+  B:[1,1,1,1,1,1,1,1,1,1],
+  C:[0,1,1,1,0,0,0,0,0,0]
+};
+
+
 //顧客データベース作成
 const create_userTable = {
     text:'CREATE TABLE IF NOT EXISTS users (id SERIAL NOT NULL, line_uid VARCHAR(255), display_name VARCHAR(255), timestamp VARCHAR(255));'
@@ -319,7 +327,7 @@ const lineBot = (req,res) => {
               //スタッフ人数分のreservableArrayを取得
               const reservableArray = [];
               for(let i=0; i<STAFFS.length; i++){
-                const staff_reservable = await checkReservable(ev,orderedMenu,selectedDate,i);
+                const staff_reservable = await checkReservable(ev,orderedMenu,treatTime,selectedDate,i);
                 reservableArray.push(staff_reservable);
               }
               console.log('reservableArray:',reservableArray);
@@ -1237,10 +1245,10 @@ const checkNextReservation = (ev) => {
   });
  }
  //checkReservable関数（予約可能な時間をチェックする）
- const checkReservable = (ev,menu,date,num) => {
+ const checkReservable = (ev,menu,treatTime,date,num) => {
   return new Promise( async (resolve,reject)=>{
     const id = ev.source.userId;
-    const treatTime = await calcTreatTime(id,menu);
+    //const treatTime = ev.source.
     const treatTimeToMs = treatTime*60*1000;
     console.log('treatTime:',treatTime);
     console.log('treatTimeToMs:',treatTimeToMs);
