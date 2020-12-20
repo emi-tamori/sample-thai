@@ -269,7 +269,7 @@ const lineBot = (req,res) => {
     }else{
         return client.replyMessage(ev.replyToken,{
             "type":"text",
-            "text":`${profile.displayName}さん\nメッセージありがとうございます。\n\n申し訳ございませんが、このアカウントでは個別の返信をしておりません。\n\n＜お問い合わせ＞\nご質問などお問い合わせは店舗にお願いします。\nhttps://tsukumonetwork.co.jp/`
+            "text":`${profile.displayName}さん\nメッセージありがとうございます。\n\n申し訳ございませんが、このアカウントでは個別の返信をしておりません。`
         });
     }
 }
