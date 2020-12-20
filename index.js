@@ -8,7 +8,7 @@ const connection = new Client({
     host:process.env.PG_HOST,
     database:process.env.PG_DATABASE,
     password:process.env.PG_PASSWORD,
-    port:5432
+    port:5432//★
   });
   connection.connect();
 const PORT = process.env.PORT || 5000
@@ -316,7 +316,14 @@ const lineBot = (req,res) => {
             console.log('futureLimit = ' + futureLimit);
             //予約可能日上限を判定
             if(targetDate <= futureLimit){
-              askTime(ev,orderedMenu,treatTime,selectedDate);
+              //スタッフ人数分のreservableArrayを取得
+              const reservableArray = [];
+              for(let i=0; i<STAFFS.length; i++){
+                const staff_reservable = await checkReservable(ev,orderedMenu,selectedDate,i);
+                reservableArray.push(staff_reservable);
+              }
+              console.log('reservableArray:',reservableArray);
+              askTime(ev,orderedMenu,treatTime,selectedDate,reservableArray);
             }else{
               return client.replyMessage(ev.replyToken,{
                 "type":"text",
@@ -353,24 +360,21 @@ const lineBot = (req,res) => {
         console.log('nowTime:',nowTime);//現在の日時タイムスタンプの形で出力
       
         if(targetDateTime>nowTime){
-          confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
+          //予約不可の時間帯は-1が返ってくるためそれを条件分岐
+          if(selectedTime >= 0){
+            confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime,0);
+          }else{
+            return client.replyMessage(ev.replyToken,{
+              "type":"text",
+              "text":"申し訳ありません。この時間帯には予約可能な時間がありません><;"
+            });
+          }
         }else{
           return client.replyMessage(ev.replyToken,{
             "type":"text",
             "text":"過去の時間は選べません"
           });
         }
-      }else if(splitData[0] === 'time'){
-        const orderedMenu = splitData[1];//メニュー取得
-        const treatTime = splitData[2];//施術時間を取得
-        const selectedDate = splitData[3];//来店日取得
-        const selectedTime = splitData[4];//来店時間取得
-        console.log('timeのsplitData = ', splitData);//[ 'time', '0', '30', '2020-11-17', '0' ]の形で出力
-        console.log('選択したメニユー番号：'+ orderedMenu);//0の形で出力(数値)
-        console.log('選択した施術時間：'+ treatTime);//30の形で出力（数値）
-        console.log('選択した日付'+ selectedDate);//2020-11-17の形で出力
-        console.log('来店時間：'+ selectedTime);//0の形で出力(数値)
-        confirmation(ev,orderedMenu,treatTime,selectedDate,selectedTime);
       }else if(splitData[0] === 'delete'){
         const id = parseInt(splitData[1]);
         console.log('id:' + id);//5の形で出力
@@ -391,26 +395,52 @@ const lineBot = (req,res) => {
         const orderedMenu = splitData[1];//メニュー取得
         const treatTime = splitData[2];//施術時間を取得
         const selectedDate = splitData[3];//来店日取得
-        const selectedTime = splitData[4];//来店時間取得
-        const startTimestamp = timeConversion(selectedDate,selectedTime);//スタート日時をタイムスタンプ形式形式で取得
-        //const treatTime = calcTreatTime(ev.source.userId,orderedMenu);//施術時間を取得
-        const endTimestamp = startTimestamp + treatTime*60*1000;//施術終了時間を取得
-        const insertQuery = {
-          text:'INSERT INTO reservations (line_uid, name, scheduledate, starttime, endtime, menu, treattime) VALUES($1,$2,$3,$4,$5,$6,$7);',
-          values:[ev.source.userId,profile.displayName,selectedDate,startTimestamp,endTimestamp,orderedMenu,treatTime]
-        };
-        connection.query(insertQuery)
+        const fixedTime = splitData[4];//来店時間取得
+        const staffNumber = parseInt(splitData[5]);
+
+        //予約日時の表記取得
+        const date = dateConversion(fixedTime);
+
+        //メニュー表記の取得
+        const menuArray = orderedMenu.split('%');
+        let menu = '';
+        menuArray.forEach((value,index) => {
+          if(index !== 0){
+            menu += ',' + MENU[parseInt(value)];
+          }else{
+            menu += MENU[parseInt(value)];
+          }
+        })
+
+        //予約完了時間の計算
+        const endTime = fixedTime + treatTime*60*1000;
+
+        //予約確定前の最終チェック→予約ブッキング無しfalse、予約ブッキングありtrue
+        const check = await finalCheck(selectedDate,treatTime,fixedTime,endTime,staffNumber);
+
+        if(!check){
+          const insertQuery = {
+            text:`INSERT INTO reservations.${STAFFS[staffNumber]} (line_uid, name, scheduledate, starttime, endtime, menu) VALUES($1,$2,$3,$4,$5,$6);`,
+            values:[ev.source.userId,profile.displayName,selectedDate,fixedTime,endTime,orderedMenu]
+          };
+          connection.query(insertQuery)
           .then(res=>{
-            console.log('予約データ格納成功！');
+            console.log('データ格納成功！');
             client.replyMessage(ev.replyToken,{
               "type":"text",
-              "wrap": true,
-              "text":"予約が完了しました。\nご来店お待ちしております\uDBC0\uDC05"
+              "text":`${date}に${menu}で予約をお取りしたました）`
             });
+            //Gmail送信設定
           })
           .catch(e=>console.log(e));
-        console.log('startTime:',startTimestamp);
-        console.log('endTime:',endTimestamp);
+        }else{
+          return client.replyMessage(ev.replyToken,{
+            "type":"text",
+            "text":"先に予約を取られてしまいました><; 申し訳ありませんが、再度別の時間で予約を取ってください。"
+          });
+        }
+
+
       }else if(splitData[0] === 'no'){
         //後で設定
       }else if(splitData[0] === 'cancel'){
@@ -420,6 +450,16 @@ const lineBot = (req,res) => {
     });
       }
   }
+//dateConversion関数（タイムスタンプを任意の日付、時刻の文字列へ変換）
+const dateConversion = (timestamp) => {
+  const d = new Date(parseInt(timestamp));
+  const month = d.getMonth()+1;
+  const date = d.getDate();
+  const day = d.getDay();
+  const hour = ('0' + (d.getHours()+9)).slice(-2);
+  const min = ('0' + d.getMinutes()).slice(-2);
+  return `${month}月${date}日(${WEEK[day]}) ${hour}:${min}`;
+ }
 //orderChoice関数（メニュー選択）
 const orderChoice = (ev) => {
     return client.replyMessage(ev.replyToken,{
@@ -878,7 +918,25 @@ const askDate = (ev,orderedMenu,treatTime) => {
     });
 }
 //askTime関数(時間帯を選択)
-const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
+const askTime = (ev,orderedMenu,treatTime,selectedDate,reservableArray) => {
+  const time = [];
+  const color = [];
+
+  //予約可能時間帯とボタン色配列を生成
+  for(let i=0; i<CLOSETIME-OPENTIME; i++){
+    let count = 0;
+    for(let j=0; j<reservableArray.length; j++){
+      if(reservableArray[j][i].length) count++;
+    }
+    if(count>0){
+      time.push(i);
+      color.push('#00AA00');
+    }else{
+      time.push(-1);
+      color.push('#FF0000');
+    }
+  }
+
     return client.replyMessage(ev.replyToken,{
       "type":"flex",
       "altText":"予約日選択",
@@ -929,9 +987,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "12時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&0`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[0]}`
                   },
                   "style": "primary",
+                  "color": `${color[0]}`,
                   "margin": "md"
                 },
                 {
@@ -939,9 +998,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "13時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&1`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[1]}`
                   },
                   "style": "primary",
+                  "color": `${color[1]}`,
                   "margin": "md"
                 },
                 {
@@ -949,9 +1009,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "14時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&2`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[2]}`
                   },
                   "style": "primary",
+                  "color": `${color[2]}`,
                   "margin": "md"
                 }
               ]
@@ -965,9 +1026,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "15時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&3`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[3]}`
                   },
                   "margin": "md",
+                  "color": `${color[3]}`,
                   "style": "primary"
                 },
                 {
@@ -975,9 +1037,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "16時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&4`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[4]}`
                   },
                   "margin": "md",
+                  "color": `${color[4]}`,
                   "style": "primary"
                 },
                 {
@@ -985,9 +1048,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "17時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&5`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[5]}`
                   },
                   "margin": "md",
+                  "color": `${color[5]}`,
                   "style": "primary"
                 }
               ],
@@ -1002,9 +1066,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "18時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&6`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[6]}`
                   },
                   "margin": "md",
+                  "color": `${color[6]}`,
                   "style": "primary"
                 },
                 {
@@ -1012,9 +1077,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "19時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&7`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[7]}`
                   },
                   "margin": "md",
+                  "color": `${color[7]}`,
                   "style": "primary"
                 },
                 {
@@ -1022,9 +1088,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "20時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&8`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[8]}`
                   },
                   "margin": "md",
+                  "color": `${color[8]}`,
                   "style": "primary"
                 }
               ],
@@ -1039,9 +1106,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "21時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&9`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[9]}`
                   },
                   "margin": "md",
+                  "color": `${color[9]}`,
                   "style": "primary"
                 },
                 {
@@ -1049,9 +1117,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "22時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&10`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[10]}`
                   },
                   "margin": "md",
+                  "color": `${color[10]}`,
                   "style": "primary"
                 },
                 {
@@ -1059,9 +1128,10 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate) => {
                   "action": {
                     "type": "postback",
                     "label": "23時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&11`
+                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[11]}`
                   },
                   "margin": "md",
+                  "color": `${color[11]}`,
                   "style": "primary"
                 }
               ],
@@ -1166,19 +1236,141 @@ const checkNextReservation = (ev) => {
       .catch(e=>console.log(e));
   });
  }
+ //checkReservable関数（予約可能な時間をチェックする）
+ const checkReservable = (ev,menu,date,num) => {
+  return new Promise( async (resolve,reject)=>{
+    const id = ev.source.userId;
+    const treatTime = await calcTreatTime(id,menu);
+    const treatTimeToMs = treatTime*60*1000;
+    console.log('treatTime:',treatTime);
+    console.log('treatTimeToMs:',treatTimeToMs);
+
+    const select_query = {
+      text:`SELECT * FROM reservations.${STAFFS[num]} WHERE scheduledate = $1 ORDER BY starttime ASC;`,
+      values:[`${date}`]
+    };
+
+    connection.query(select_query)
+    .then(res=>{
+      console.log('res.rows:',res.rows);
+      const reservedArray = res.rows.map(object=>{
+        return [parseInt(object.starttime),parseInt(object.endtime)];
+      });
+
+      //各時間のタイムスタンプ
+      // herokuサーバー基準なので、日本の時刻は９時間分進んでしまうため、引く
+      const timeStamps = [];
+      for(let i=OPENTIME; i<CLOSETIME+1; i++){
+        timeStamps.push(new Date(`${date} ${i}:00`).getTime()-9*60*60*1000);
+      }
+
+      //この日の予約を各時間帯に関する予約へ分割し、それを3次元配列に格納していく。
+      const separatedByTime = [];
+      for(let i=0; i<CLOSETIME-OPENTIME; i++){
+        const tempArray = [];
+        reservedArray.forEach(array=>{
+          //パターン0
+          if(array[0]<=timeStamps[i] && (array[1]>timeStamps[i] && array[1]<timeStamps[i+1])){
+            tempArray.push(array.concat([0]));
+          }
+          //パターン１
+          else if((array[0]>timeStamps[i] && array[0]<timeStamps[i+1]) && array[1]>=timeStamps[i+1]){
+            tempArray.push(array.concat([1]));
+          }
+          //パターン２
+          else if((array[0]>timeStamps[i] && array[0]<timeStamps[i+1])&&(array[1]>array[0] && array[1]<timeStamps[i+1])){
+            tempArray.push(array.concat([2]));
+          }
+          //パターン３
+          else if(array[0]<=timeStamps[i] && array[1]>=timeStamps[i+1]){
+            tempArray.push(array.concat([3]));
+          }
+        });
+        separatedByTime.push(tempArray);
+      }
+      //ある時間帯の最後の要素がパターン0とパターン2の場合、次の時間帯の最初の要素を加える
+      for(let i=0; i<separatedByTime.length; i++){
+        //対象時間帯の予約が存在し、かつ最後の時間帯でない場合
+        if(separatedByTime[i].length && i !== separatedByTime.length-1){
+          //次の時間帯の予約が存在する場合
+          if(separatedByTime[i+1].length){
+            //パターン0,2の場合は、次の時間帯の最初の予約のstarttimeを加える
+            const l = separatedByTime[i].length - 1;
+            const pattern = separatedByTime[i][l][2];
+            if(pattern === 0 || pattern === 2) separatedByTime[i].push(separatedByTime[i+1][0]);
+          }else{
+            //次の時間帯に予約が入っていなければとりあえず、timeStamps[i]から1時間+treatTime分のタイムスタンプを格納
+            separatedByTime[i].push([timeStamps[i]+60*60*1000+treatTimeToMs]);
+          }
+        }
+        //対象時間帯の予約が存在し、かつ最後の時間帯の場合（separatedByTime[i+1]を検知できないため特別扱いする）
+        else if(separatedByTime[i].length && i === separatedByTime.length-1){
+          const l = separatedByTime[i].length - 1;
+          const pattern = separatedByTime[i][l][2];
+          if(pattern === 0 || pattern === 2) separatedByTime[i].push([timeStamps[i] + 60*60*1000 + treatTimeToMs]);
+        }
+      }
+      //予約と予約の間隔を格納する3次元配列を生成する
+      const intervalArray = [];
+      for(let i=0; i<separatedByTime.length; i++){
+        //時間帯に予約が入っている場合
+        if(separatedByTime[i].length){
+          //separatedByTime[i]の先頭のパターンを取得
+          const pattern = separatedByTime[i][0][2];
+          //パターン0,2の場合
+          if(pattern === 0 || pattern === 2){
+            const tempArray = [];
+            for(let j=0; j<separatedByTime[i].length-1; j++){
+              tempArray.push([separatedByTime[i][j+1][0]-separatedByTime[i][j][1], separatedByTime[i][j][1]]);
+            }
+            console.log('temparray in 0 or 2:',tempArray);
+            intervalArray.push(tempArray);
+          }else if(pattern === 1){
+            intervalArray.push([[separatedByTime[i][0][0]-timeStamps[i],timeStamps[i]]]);
+          }else if(pattern === 3){
+            intervalArray.push([]);
+          }
+        }else if(i<separatedByTime.length-1 && separatedByTime[i+1].length){
+          intervalArray.push([[separatedByTime[i+1][0][0] - timeStamps[i],timeStamps[i]]]);
+        }else{
+          intervalArray.push([[60*60*1000+treatTime*60*1000,timeStamps[i]]]);
+        }
+      }
+      //reservableArrayを生成
+      const reservableArray = [];
+      ntervalArray.forEach(array2=>{
+        const tempArray = [];
+        array2.forEach(array=>{
+          let interval = array[0];
+          let target = array[1];
+          while(interval>treatTimeToMs){
+            tempArray.push(target);
+            interval -= treatTimeToMs;
+            target += treatTimeToMs;
+          }
+        });
+        reservableArray.push(tempArray);
+      });
+
+      //シフトによりマスキング
+      const shift = SHIFT1[`${STAFFS[num]}`];
+      const filteredArray = [];
+      reservableArray.forEach((value,index) => {
+        if(shift[index]){
+          filteredArray.push(value);
+        }else{
+          filteredArray.push([]);
+        }
+      });
+      resolve(filteredArray);
+    })
+    .catch(e=>console.log(e));
+  });
+ }
 //timeConversion関数（選択日と選択時間使ってタイムスタンプ形式へ変換）
 const timeConversion = (date,time) => {
     const selectedTime = 12 + parseInt(time) - 9;
     return new Date(`${date} ${selectedTime}:00`).getTime();
 }
-//dateConversion関数（タイムスタンプを任意の日付、時刻の文字列へ変換）
-const dateConversion = (timestamp) => {
-  const d = new Date(parseInt(timestamp));
-  const month = d.getMonth()+1;
-  const date = d.getDate();
-  const day = d.getDay();
-  const hour = ('0' + (d.getHours()+9)).slice(-2);
-  const min = ('0' + d.getMinutes()).slice(-2);
-  return `${month}月${date}日(${WEEK[day]}) ${hour}:${min}`;
- }
+
 
