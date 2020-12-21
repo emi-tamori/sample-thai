@@ -58,6 +58,15 @@ connection.query(create_reservationTable)
   console.log('table users created successfully!!');
 })
 .catch(e=>console.log(e));*/
+
+//スキーマの作成
+const create_schema ={
+  text:'CREATE SCHEMA IF NOT EXISTS reservations'
+};
+connection.query(create_schema)
+  .then(()=>console.log('schema created successfully'))
+  .catch(e=>console.log(e));
+
 //スタッフごとの予約テーブルの作成
 STAFFS.forEach(name=>{
   const create_table = {
@@ -1399,15 +1408,7 @@ const finalCheck = (date,startTime,endTime,staffNumber) => {
       })
       .catch(e=>console.log(e));
   });
-}
-//スキーマの作成
-const create_schema ={
-  text:'CREATE SCHEMA IF NOT EXISTS reservations'
-};
-connection.query(create_schema)
-  .then(()=>console.log('schema created successfully'))
-  .catch(e=>console.log(e));
-  
+}  
 //予約選択日における各スタッフの予約数を取得する
 const getNumberOfReservations = (date) => { 
   return new Promise((resolve,reject) => {
