@@ -106,7 +106,7 @@ const lineBot = (req,res) => {
         .catch(e=>console.log(e));
     return client.replyMessage(ev.replyToken,{
         "type":"text",
-        "text":`${profile.displayName}さん、友達登録ありがとうございます\uDBC0\uDC04\n\nタイマッサージ店〇〇です\n\nご予約お待ちしております\uDBC0\uDC01\uDBC0\uDC2D\uDBC0\uDC2D`
+        "text":`${profile.displayName}さん、友達登録ありがとうございます\uDBC0\uDC04\n\nご予約お待ちしております\uDBC0\uDC01\uDBC0\uDC2D\uDBC0\uDC2D`
     });
  }
 //handleMessageEvent関数（メッセージが送られてきた時の処理振り分け）
