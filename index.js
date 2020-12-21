@@ -1140,17 +1140,6 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate,reservableArray) => {
                   "color": `${color[10]}`,
                   "style": "primary"
                 },
-                {
-                  "type": "button",
-                  "action": {
-                    "type": "postback",
-                    "label": "23時~",
-                    "data": `time&${orderedMenu}&${treatTime}&${selectedDate}&${time[11]}`
-                  },
-                  "margin": "md",
-                  "color": `${color[11]}`,
-                  "style": "primary"
-                }
               ],
               "margin": "md"
             },
@@ -1411,6 +1400,14 @@ const finalCheck = (date,startTime,endTime,staffNumber) => {
       .catch(e=>console.log(e));
   });
 }
+//スキーマの作成
+const create_schema ={
+  text:'CREATE SCHEMA IF NOT EXISTS reservations'
+};
+connection.query(create_schema)
+  .then(()=>console.log('schema created successfully'))
+  .catch(e=>console.log(e));
+  
 //予約選択日における各スタッフの予約数を取得する
 const getNumberOfReservations = (date) => { 
   return new Promise((resolve,reject) => {
