@@ -34,9 +34,9 @@ const STAFFS = ['A','B','C'];//★スタッフを設定
 
 //★初期シフト
 const SHIFT1 = {
-  A:[0,0,0,0,0,0,0,0,0,1],
-  B:[1,1,1,1,1,1,1,1,1,1],
-  C:[0,1,1,1,0,0,0,0,0,0]
+  A:[0,0,0,0,0,0,0,0,0,1,1],
+  B:[1,1,1,1,1,1,1,1,1,1,1],
+  C:[0,1,1,1,0,0,0,0,0,0,0]
 };
 
 
@@ -1355,7 +1355,7 @@ const checkNextReservation = (ev) => {
       }
       //reservableArrayを生成
       const reservableArray = [];
-      ntervalArray.forEach(array2=>{
+      intervalArray.forEach(array2=>{
         const tempArray = [];
         array2.forEach(array=>{
           let interval = array[0];
