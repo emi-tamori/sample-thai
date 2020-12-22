@@ -423,6 +423,7 @@ const lineBot = (req,res) => {
         const selectedDate = splitData[3];//来店日取得
         const fixedTime = splitData[4];//来店時間取得
         const staffNumber = parseInt(splitData[5]);
+        console.log('staffNumber =',staffNumber);
 
         //予約日時の表記取得
         const date = dateConversion(fixedTime);
