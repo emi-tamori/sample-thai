@@ -380,7 +380,7 @@ const lineBot = (req,res) => {
         console.log('来店時間：'+ selectedTime);//0の形で出力(数値)
 
         //選んだ時間が過去の時間かを判定する
-        const targetDateTime = new Date(`${selectedDate} ${12+parseInt(selectedTime)}:00`).getTime() - 9*60*60*1000;//★開店時間を設置ずる${12+parseIntの12部分
+        const targetDateTime = new Date(`${selectedDate} ${12+parseInt(selectedTime)}:00`).getTime() - 9*60*60*1000;//★開店時間を設置する${11+parseIntの12部分
         const nowTime = new Date().getTime();
         console.log('targetDateTime:',targetDateTime);//選んだ日時タイムスタンプの形で出力
         console.log('nowTime:',nowTime);//現在の日時タイムスタンプの形で出力
@@ -1179,9 +1179,55 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate,reservableArray) => {
     });
 }
 //confirmation関数（確認メッセージをリプライ）
-const confirmation = (ev,menu,menutime,date,time) => {
-    const splitDate = date.split('-');
-    const selectedTime = 12 + parseInt(time);
+const confirmation = (ev,menu,menutime,date,time,n) => {
+   //各スタッフの予約数
+   const numberOfReservations = await getNumberOfReservations(date);
+   console.log('numberOfReservations:',numberOfReservations);
+   const splitDate = date.split('-');
+   const selectedTime = 12 + parseInt(time);//★開店時間を設置ずる
+
+   //スタッフ人数分のreservableArrayを取得
+   const reservableArray = [];
+   for(let i=0; i<STAFFS.length; i++){
+    const staff_reservable = await checkReservable(ev,menu,treatTime,date,i);
+    reservableArray.push(staff_reservable);
+   }
+   console.log('reservableArray=',reservableArray);
+
+   //対象時間の候補抜き出し
+   const targets = reservableArray.map( array => {
+    return array[parseInt(time)];
+   });
+   console.log('targets:',targets);
+
+   //誰の予約とするかを決定する（その日の予約数が一番少ないスタッフ）
+   const maskingArray = [];
+   for(let i=0; i<targets.length; i++){
+    if(targets[i].length){
+      maskingArray.push(numberOfReservations[i]);
+    }else{
+      maskingArray.push(-1);
+    }
+   }
+   console.log('maskignArray=',maskingArray);
+
+   //予約可能かつ予約回数が一番少ないスタッフを選定する
+   let tempNumber = 1000;
+   let staffNumber;
+   maskingArray.forEach((value,index)=>{
+    if(value>=0 && value<tempNumber){
+      tempNumber = value;
+      staffNumber = index;
+    }
+   });
+   const candidates = targets[staffNumber];
+   console.log('candidates=',candidates);
+
+   const n_dash = (n>=candidates.length-1) ? -1 : n+1;
+   console.log('n_dash:',n_dash);
+
+   const proposalTime = dateConversion(candidates[n]);
+
     return client.replyMessage(ev.replyToken,{
      "type":"flex",
      "altText":"menuSelect",
@@ -1209,7 +1255,7 @@ const confirmation = (ev,menu,menutime,date,time) => {
             "action": {
               "type": "postback",
               "label": "はい",
-              "data": `yes&${menu}&${menutime}&${date}&${time}`
+              "data": `yes&${menu}&${menutime}&${date}&${candidates[n]}&${staffNumber}`
             }
           },
           {
@@ -1217,7 +1263,7 @@ const confirmation = (ev,menu,menutime,date,time) => {
             "action": {
               "type": "postback",
               "label": "いいえ",
-              "data": `no&${menu}&${menutime}&${date}&${time}`
+              "data": `no&${menu}&${menutime}&${date}&${time}&${n_dash}`
             }
           }
         ]
@@ -1384,7 +1430,7 @@ const checkNextReservation = (ev) => {
  }
 //timeConversion関数（選択日と選択時間使ってタイムスタンプ形式へ変換）
 const timeConversion = (date,time) => {
-    const selectedTime = 12 + parseInt(time) - 9;
+    const selectedTime = 12 + parseInt(time) - 9;//★開店時間を設置する
     return new Date(`${date} ${selectedTime}:00`).getTime();
 }
 //finalCheck関数
