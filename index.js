@@ -1179,55 +1179,9 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate,reservableArray) => {
     });
 }
 //confirmation関数（確認メッセージをリプライ）
-const confirmation = (ev,menu,menutime,date,time,n) => {
-   //各スタッフの予約数
-   const numberOfReservations = await getNumberOfReservations(date);
-   console.log('numberOfReservations:',numberOfReservations);
-   const splitDate = date.split('-');
-   const selectedTime = 12 + parseInt(time);//★開店時間を設置ずる
-
-   //スタッフ人数分のreservableArrayを取得
-   const reservableArray = [];
-   for(let i=0; i<STAFFS.length; i++){
-    const staff_reservable = await checkReservable(ev,menu,treatTime,date,i);
-    reservableArray.push(staff_reservable);
-   }
-   console.log('reservableArray=',reservableArray);
-
-   //対象時間の候補抜き出し
-   const targets = reservableArray.map( array => {
-    return array[parseInt(time)];
-   });
-   console.log('targets:',targets);
-
-   //誰の予約とするかを決定する（その日の予約数が一番少ないスタッフ）
-   const maskingArray = [];
-   for(let i=0; i<targets.length; i++){
-    if(targets[i].length){
-      maskingArray.push(numberOfReservations[i]);
-    }else{
-      maskingArray.push(-1);
-    }
-   }
-   console.log('maskignArray=',maskingArray);
-
-   //予約可能かつ予約回数が一番少ないスタッフを選定する
-   let tempNumber = 1000;
-   let staffNumber;
-   maskingArray.forEach((value,index)=>{
-    if(value>=0 && value<tempNumber){
-      tempNumber = value;
-      staffNumber = index;
-    }
-   });
-   const candidates = targets[staffNumber];
-   console.log('candidates=',candidates);
-
-   const n_dash = (n>=candidates.length-1) ? -1 : n+1;
-   console.log('n_dash:',n_dash);
-
-   const proposalTime = dateConversion(candidates[n]);
-
+const confirmation = (ev,menu,menutime,date,time) => {
+    const splitDate = date.split('-');
+    const selectedTime = 12 + parseInt(time);
     return client.replyMessage(ev.replyToken,{
      "type":"flex",
      "altText":"menuSelect",
@@ -1255,7 +1209,7 @@ const confirmation = (ev,menu,menutime,date,time,n) => {
             "action": {
               "type": "postback",
               "label": "はい",
-              "data": `yes&${menu}&${menutime}&${date}&${candidates[n]}&${staffNumber}`
+              "data": `yes&${menu}&${menutime}&${date}&${time}`
             }
           },
           {
@@ -1263,7 +1217,7 @@ const confirmation = (ev,menu,menutime,date,time,n) => {
             "action": {
               "type": "postback",
               "label": "いいえ",
-              "data": `no&${menu}&${menutime}&${date}&${time}&${n_dash}`
+              "data": `no&${menu}&${menutime}&${date}&${time}`
             }
           }
         ]
@@ -1474,5 +1428,6 @@ const getNumberOfReservations = (date) => {
     }
   })
 }
+
 
 
