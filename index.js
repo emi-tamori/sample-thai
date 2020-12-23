@@ -423,7 +423,6 @@ const lineBot = (req,res) => {
         const selectedDate = splitData[3];//来店日取得
         const fixedTime = splitData[4];//来店時間取得
         const staffNumber = parseInt(splitData[5]);
-        console.log('staffNumber =',staffNumber);
 
         //予約日時の表記取得
         const date = dateConversion(fixedTime);
@@ -1180,7 +1179,7 @@ const askTime = (ev,orderedMenu,treatTime,selectedDate,reservableArray) => {
     });
 }
 //confirmation関数（確認メッセージをリプライ）
-const confirmation = (ev,menu,menutime,date,time,n) => {
+const confirmation = async(ev,menu,menutime,date,time,n) => {
   //各スタッフの予約数
   const numberOfReservations = await getNumberOfReservations(date);
   console.log('numberOfReservations:',numberOfReservations);
@@ -1478,6 +1477,7 @@ const getNumberOfReservations = (date) => {
     }
   })
 }
+
 
 
 
