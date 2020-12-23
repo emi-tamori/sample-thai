@@ -447,7 +447,7 @@ const lineBot = (req,res) => {
 
         if(!check){
           const insertQuery = {
-            text:`INSERT INTO reservations.${STAFFS[staffNumber]} (line_uid, name, scheduledate, starttime, endtime, menu) VALUES($1,$2,$3,$4,$5,$6);`,
+            text:`INSERT INTO reservations.${STAFFS[staffNumber]} (line_uid, name, scheduledate, starttime, endtime, menu, treattime) VALUES($1,$2,$3,$4,$5,$6,$7);`,
             values:[ev.source.userId,profile.displayName,selectedDate,fixedTime,endTime,orderedMenu]
           };
           connection.query(insertQuery)
