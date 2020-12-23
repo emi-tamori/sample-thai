@@ -420,7 +420,7 @@ const lineBot = (req,res) => {
       }else if(splitData[0] === 'yes'){
         const orderedMenu = splitData[1];//メニュー取得
         const treatTime = parseInt(splitData[2]);//施術時間を取得
-        const selectedDate = parseInt(splitData[3]);//来店日取得
+        const selectedDate = splitData[3];//来店日取得
         const fixedTime =  parseInt(splitData[4]);//来店時間取得
         const staffNumber = parseInt(splitData[5]);
 
