@@ -1291,11 +1291,10 @@ const checkNextReservation = (ev) => {
       connection.query(selectQuery)
         .then(res=>{
           if(res.rows.length) nextReservation.push(res.rows[0]);
+          if(index === STAFFS.length-1) resolve(nextReservation);
         })
         .catch(e=>console.log(e));
     });
-    console.log('nextrev before resolve',nextReservation);
-    resolve(nextReservation);
     // const selectQuery = {
     //   text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
     //   values: [`${id}`]
