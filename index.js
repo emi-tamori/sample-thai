@@ -1281,24 +1281,36 @@ const checkNextReservation = (ev) => {
     const id = ev.source.userId;
     const nowTime = new Date().getTime();
     
-    const selectQuery = {
-      text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
-      values: [`${id}`]
-    };
+    STAFFS.forEach(name=>{
+      const selectQuery = {
+        text: `SELECT * FROM reservations.${name} WHERE line_uid=$1 ORDER BY starttime ASC;`,
+        values: [`${id}`]
+      }
+      connection.query(selectQuery)
+        .then(res=>{
+          console.log('nextRev res.rows',res.rows,typeof res.rows);
+
+        })
+        .catch(e=>console.log(e));
+    });
+    // const selectQuery = {
+    //   text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
+    //   values: [`${id}`]
+    // };
     
-    connection.query(selectQuery)
-      .then(res=>{
-        if(res.rows.length){
-          const nextReservation = res.rows.filter(object=>{
-            return parseInt(object.starttime) >= nowTime;
-          });
-          console.log('nextReservation:',nextReservation);
-          resolve(nextReservation);
-        }else{
-          resolve();
-        }
-      })
-      .catch(e=>console.log(e));
+    // connection.query(selectQuery)
+    //   .then(res=>{
+    //     if(res.rows.length){
+    //       const nextReservation = res.rows.filter(object=>{
+    //         return parseInt(object.starttime) >= nowTime;
+    //       });
+    //       console.log('nextReservation:',nextReservation);
+    //       resolve(nextReservation);
+    //     }else{
+    //       resolve();
+    //     }
+    //   })
+    //   .catch(e=>console.log(e));
   });
  }
  //checkReservable関数（予約可能な時間をチェックする）
