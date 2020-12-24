@@ -1290,7 +1290,12 @@ const checkNextReservation = (ev) => {
       }
       connection.query(selectQuery)
         .then(res=>{
-          if(res.rows.length) nextReservation.push(res.rows[0]);
+          if(res.rows.length){
+            const filteredNext = res.rows.filter(object=>{
+              return parseInt(object.starttime) > nowTime;
+            });
+            if(filteredNext.length) nextReservation.push(filteredNext);
+          }
           if(index === STAFFS.length-1) resolve(nextReservation);
         })
         .catch(e=>console.log(e));
