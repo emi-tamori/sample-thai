@@ -127,7 +127,7 @@ const lineBot = (req,res) => {
     
     if(text === '予約する'){
       const nextReservation = await checkNextReservation(ev);
-      console.log('nextreservation',nextReservation);
+      console.log('nextreservation after await',nextReservation);
       if(nextReservation.length){
         console.log('すでに予約あり');
         const startTimestamp = nextReservation[0].starttime;
@@ -1281,7 +1281,7 @@ const checkNextReservation = (ev) => {
   return new Promise((resolve,reject)=>{
     const id = ev.source.userId;
     const nowTime = new Date().getTime();
-    
+
     const nextReservation = [];
     STAFFS.forEach((name,index)=>{
       const selectQuery = {
@@ -1290,11 +1290,11 @@ const checkNextReservation = (ev) => {
       }
       connection.query(selectQuery)
         .then(res=>{
-          console.log('nextRev res.rows',res.rows,typeof res.rows);
           if(res.rows.length) nextReservation.push(res.rows[0]);
         })
         .catch(e=>console.log(e));
     });
+    console.log('nextrev before resolve',nextReservation);
     resolve(nextReservation);
     // const selectQuery = {
     //   text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
