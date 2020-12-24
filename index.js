@@ -30,13 +30,13 @@ const REGULAR_COLOSE = [1]; //★定休日の曜日
 const OPENTIME = 12;//★開店時間
 const CLOSETIME = 23;//★閉店時間
 const FUTURE_LIMIT = 3; //★何日先まで予約可能かの上限
-const STAFFS = ['a','b','c'];//★スタッフを設定
+const STAFFS = ['ken','emi','taro'];//★スタッフを設定
 
 //★初期シフト
 const SHIFT1 = {
-  a:[0,0,0,0,0,0,0,0,0,1,1],
-  b:[1,1,1,1,1,1,1,1,1,1,1],
-  c:[0,1,1,1,0,0,0,0,0,0,0]
+  ken:[0,0,0,0,0,0,0,0,0,1,1],
+  emi:[1,1,1,1,1,1,1,1,1,1,1],
+  taro:[0,1,1,1,0,0,0,0,0,0,0]
 };
 
 
@@ -126,55 +126,56 @@ const lineBot = (req,res) => {
     const text = (ev.message.type === 'text') ? ev.message.text : '';
     
     if(text === '予約する'){
-      const nextReservation = await checkNextReservation(ev);
-      if(nextReservation.length){
-        console.log('すでに予約あり');
-        const startTimestamp = nextReservation[0].starttime;
-        const date = dateConversion(startTimestamp);
-        const orderedMenu = nextReservation[0].menu;
-        const menu = MENU[orderedMenu];
-        console.log('startTimestamp = ' + startTimestamp);//予約済みの日付タイムスタンプ
-        console.log('date = ' + date);//タイムスタンプを文字列の形で出力
-        console.log('orderedMenu = ' + orderedMenu);//メニューのindex数
-        console.log('menu = ' + menu);//メニュー名
-        return client.replyMessage(ev.replyToken,{
-          "type":"flex",
-          "altText": "cancel message",
-          "contents":
-          {
-            "type": "bubble",
-            "body": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": [
-                {
-                  "type": "text",
-                  "text": `次回ご予約は${date}\n${menu}でお取りしてます。変更の場合はキャンセル後改めてご予約をお願いします。`,
-                  "margin": "md",
-                  "wrap": true
-                }
-              ]
-            },
-            "footer": {
-              "type": "box",
-              "layout": "vertical",
-              "contents": [
-                {
-                  "type": "button",
-                  "action": {
-                    "type": "postback",
-                    "label": "終了",
-                    "data": "cancel"
-                  },
-                  "style": "secondary",
-                }
-              ]
-            }
-          }
-        });
-      }else{
-        orderChoice(ev);
-      }
+      orderChoice(ev);
+      // const nextReservation = await checkNextReservation(ev);
+      // if(nextReservation.length){
+      //   console.log('すでに予約あり');
+      //   const startTimestamp = nextReservation[0].starttime;
+      //   const date = dateConversion(startTimestamp);
+      //   const orderedMenu = nextReservation[0].menu;
+      //   const menu = MENU[orderedMenu];
+      //   console.log('startTimestamp = ' + startTimestamp);//予約済みの日付タイムスタンプ
+      //   console.log('date = ' + date);//タイムスタンプを文字列の形で出力
+      //   console.log('orderedMenu = ' + orderedMenu);//メニューのindex数
+      //   console.log('menu = ' + menu);//メニュー名
+      //   return client.replyMessage(ev.replyToken,{
+      //     "type":"flex",
+      //     "altText": "cancel message",
+      //     "contents":
+      //     {
+      //       "type": "bubble",
+      //       "body": {
+      //         "type": "box",
+      //         "layout": "vertical",
+      //         "contents": [
+      //           {
+      //             "type": "text",
+      //             "text": `次回ご予約は${date}\n${menu}でお取りしてます。変更の場合はキャンセル後改めてご予約をお願いします。`,
+      //             "margin": "md",
+      //             "wrap": true
+      //           }
+      //         ]
+      //       },
+      //       "footer": {
+      //         "type": "box",
+      //         "layout": "vertical",
+      //         "contents": [
+      //           {
+      //             "type": "button",
+      //             "action": {
+      //               "type": "postback",
+      //               "label": "終了",
+      //               "data": "cancel"
+      //             },
+      //             "style": "secondary",
+      //           }
+      //         ]
+      //       }
+      //     }
+      //   });
+      // }else{
+      //   orderChoice(ev);
+      // }
     //orderChoice(ev);
     }else if(text === '予約確認'){
       const nextReservation = await checkNextReservation(ev);
@@ -1280,25 +1281,43 @@ const checkNextReservation = (ev) => {
   return new Promise((resolve,reject)=>{
     const id = ev.source.userId;
     const nowTime = new Date().getTime();
+
+    const nextReservation = [];
+    STAFFS.forEach((name,index)=>{
+      const selectQuery = {
+        text: `SELECT * FROM reservations.${name} WHERE line_uid=$1 ORDER BY starttime ASC;`,
+        values: [`${id}`]
+      }
+      connection.query(selectQuery)
+        .then(res=>{
+          if(res.rows.length){
+            const filteredNext = res.rows.filter(object=>{
+              return parseInt(object.starttime) > nowTime;
+            });
+            if(filteredNext.length) nextReservation.push(filteredNext);
+          }
+          if(index === STAFFS.length-1) resolve(nextReservation);
+        })
+        .catch(e=>console.log(e));
+    });
+    // const selectQuery = {
+    //   text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
+    //   values: [`${id}`]
+    // };
     
-    const selectQuery = {
-      text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
-      values: [`${id}`]
-    };
-    
-    connection.query(selectQuery)
-      .then(res=>{
-        if(res.rows.length){
-          const nextReservation = res.rows.filter(object=>{
-            return parseInt(object.starttime) >= nowTime;
-          });
-          console.log('nextReservation:',nextReservation);
-          resolve(nextReservation);
-        }else{
-          resolve();
-        }
-      })
-      .catch(e=>console.log(e));
+    // connection.query(selectQuery)
+    //   .then(res=>{
+    //     if(res.rows.length){
+    //       const nextReservation = res.rows.filter(object=>{
+    //         return parseInt(object.starttime) >= nowTime;
+    //       });
+    //       console.log('nextReservation:',nextReservation);
+    //       resolve(nextReservation);
+    //     }else{
+    //       resolve();
+    //     }
+    //   })
+    //   .catch(e=>console.log(e));
   });
  }
  //checkReservable関数（予約可能な時間をチェックする）
