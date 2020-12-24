@@ -1281,7 +1281,8 @@ const checkNextReservation = (ev) => {
     const id = ev.source.userId;
     const nowTime = new Date().getTime();
     
-    STAFFS.forEach(name=>{
+    const nextReservation = [];
+    STAFFS.forEach((name,index)=>{
       const selectQuery = {
         text: `SELECT * FROM reservations.${name} WHERE line_uid=$1 ORDER BY starttime ASC;`,
         values: [`${id}`]
@@ -1289,10 +1290,11 @@ const checkNextReservation = (ev) => {
       connection.query(selectQuery)
         .then(res=>{
           console.log('nextRev res.rows',res.rows,typeof res.rows);
-
+          if(res.rows.length) nextReservation.push(res.rows[0]);
         })
         .catch(e=>console.log(e));
     });
+    resolve(nextReservation);
     // const selectQuery = {
     //   text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
     //   values: [`${id}`]
