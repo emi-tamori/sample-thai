@@ -127,6 +127,7 @@ const lineBot = (req,res) => {
     
     if(text === '予約する'){
       const nextReservation = await checkNextReservation(ev);
+      console.log('nextreservation',nextReservation);
       if(nextReservation.length){
         console.log('すでに予約あり');
         const startTimestamp = nextReservation[0].starttime;
