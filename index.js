@@ -30,7 +30,7 @@ const REGULAR_COLOSE = [1]; //★定休日の曜日
 const OPENTIME = 12;//★開店時間
 const CLOSETIME = 23;//★閉店時間
 const FUTURE_LIMIT = 3; //★何日先まで予約可能かの上限
-const STAFFS = ['A','B','C'];//★スタッフを設定
+const STAFFS = ['a','b','c'];//★スタッフを設定
 
 //★初期シフト
 const SHIFT1 = {
