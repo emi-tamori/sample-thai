@@ -168,13 +168,14 @@ const lineBot = (req,res) => {
     orderChoice(ev);
     }else if(text === '予約確認'){
       const nextReservation = await checkNextReservation(ev);
+       console.log('nextReservation =',nextReservation);
       if(typeof nextReservation === 'undefined'){
         return client.replyMessage(ev.replyToken,{
           "type":"text",
           "text":"次回の予約は入っておりません。"
         })
       }else if(nextReservation.length){
-        const startTimestamp = nextReservation[0].starttime;
+        const startTimestamp =nextReservation[0].starttime;
         const date = dateConversion(startTimestamp);
         const menu = MENU[parseInt(nextReservation[0].menu)];
         const treatTime = nextReservation[0].treattime;
@@ -202,7 +203,7 @@ const lineBot = (req,res) => {
           "text":"次回の予約は入っておりません。"
         })
       }else if(nextReservation.length){
-        const startTimestamp = parseInt(nextReservation[0].starttime);
+        const startTimestamp = nextReservation[0].starttime;
         const orderedMenu = nextReservation[0].menu;
         const menu = MENU[parseInt(nextReservation[0].menu)];
         const treatTime = nextReservation[0].treattime;
@@ -1277,7 +1278,7 @@ const checkNextReservation = (ev) => {
         text: `SELECT * FROM reservations.${name} WHERE line_uid=$1 ORDER BY starttime ASC;`,
         values: [`${id}`]
       }
-    });
+    
     connection.query(selectQuery)
     .then(res=>{
       if(res.rows.length){
@@ -1290,26 +1291,7 @@ const checkNextReservation = (ev) => {
     })
     .catch(e=>console.log(e));
     });
-    
-    //const selectQuery = {
-      //text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
-      //values: [`${id}`]
-    //};
-    
-    //connection.query(selectQuery)
-      //.then(res=>{
-        //if(res.rows.length){
-          //const nextReservation = res.rows.filter(object=>{
-            //return parseInt(object.starttime) >= nowTime;
-          //});
-          //console.log('nextReservation:',nextReservation);
-          //resolve(nextReservation);
-        //}else{
-          //resolve();
-        //}
-      //})
-      //.catch(e=>console.log(e));
-  //});
+  });
  }
  //checkReservable関数（予約可能な時間をチェックする）
  const checkReservable = (ev,menu,treatTime,date,num) => {
@@ -1488,8 +1470,3 @@ const getNumberOfReservations = (date) => {
     }
   })
 }
-
-
-
-
-
