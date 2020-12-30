@@ -167,7 +167,7 @@ const lineBot = (req,res) => {
       }*/
     orderChoice(ev);
     }else if(text === '予約確認'){
-      const nextReservation = await checkNextReservation(ev);
+      const nextReservation = await checkReservable(ev,orderedMenu,treatTime,selectedDate,i);
       if(typeof nextReservation === 'undefined'){
         return client.replyMessage(ev.replyToken,{
           "type":"text",
