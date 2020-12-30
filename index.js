@@ -176,7 +176,6 @@ const lineBot = (req,res) => {
       }else if(nextReservation.length){
         const startTimestamp = nextReservation[0].starttime;
         const date = dateConversion(startTimestamp);
-        date = parseInt(date);
         const menu = MENU[parseInt(nextReservation[0].menu)];
         const treatTime = nextReservation[0].treattime;
         console.log('startTimestamp = ' + startTimestamp);// スタート時間タイムスタンプの形で出力
