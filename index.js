@@ -49,15 +49,6 @@ const create_userTable = {
        console.log('table users created successfully!!');
    })
    .catch(e=>console.log(e));
-//予約データベースの作成
-/*const create_reservationTable = {
-  text:'CREATE TABLE IF NOT EXISTS reservations (id SERIAL NOT NULL, line_uid VARCHAR(255), name VARCHAR(100), scheduledate DATE, starttime BIGINT, endtime BIGINT, menu VARCHAR(50),treattime BIGINT);'
-};
-connection.query(create_reservationTable)
-.then(()=>{
-  console.log('table users created successfully!!');
-})
-.catch(e=>console.log(e));*/
 
 //スキーマの作成
 const create_schema ={
@@ -70,7 +61,6 @@ connection.query(create_schema)
 //スタッフごとの予約テーブルの作成
 STAFFS.forEach(name=>{
   const create_table = {
-    //text:`CREATE TABLE IF NOT EXISTS reservations.${name} (id SERIAL NOT NULL, line_uid VARCHAR(100), name VARCHAR(100), scheduledate DATE, starttime BIGINT, endtime BIGINT, menu VARCHAR(20));`
     text:'CREATE TABLE IF NOT EXISTS reservations (id SERIAL NOT NULL, line_uid VARCHAR(255), name VARCHAR(100), scheduledate DATE, starttime BIGINT, endtime BIGINT, menu VARCHAR(50),treattime BIGINT);'
   };
   connection.query(create_table)
@@ -177,7 +167,14 @@ const lineBot = (req,res) => {
       }*/
     orderChoice(ev);
     }else if(text === '予約確認'){
-      const nextReservation = await checkNextReservation(ev);
+      //スタッフ人数分のreservableArrayを取得
+      const nextReservation = [];
+      for(let i=0; i<STAFFS.length; i++){
+        //const nextReservation = await checkNextReservation(ev);
+        const nextReservation = await checkReservable(ev,i);
+      }
+      console.log('nextReservation:',nextReservation);
+      
       if(typeof nextReservation === 'undefined'){
         return client.replyMessage(ev.replyToken,{
           "type":"text",
