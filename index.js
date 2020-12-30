@@ -175,7 +175,7 @@ const lineBot = (req,res) => {
           "text":"次回の予約は入っておりません。"
         })
       }else if(nextReservation.length){
-        const startTimestamp = nextReservation[0].starttime;
+        const startTimestamp = parsInt(nextReservation[0].starttime);
         const date = dateConversion(startTimestamp);
         const menu = MENU[parseInt(nextReservation[0].menu)];
         const treatTime = nextReservation[0].treattime;
@@ -1291,25 +1291,6 @@ const checkNextReservation = (ev) => {
     })
     .catch(e=>console.log(e));
     });
-    
-    //const selectQuery = {
-      //text: 'SELECT * FROM reservations WHERE line_uid = $1 ORDER BY starttime ASC;',
-      //values: [`${id}`]
-    //};
-    
-    //connection.query(selectQuery)
-      //.then(res=>{
-        //if(res.rows.length){
-          //const nextReservation = res.rows.filter(object=>{
-            //return parseInt(object.starttime) >= nowTime;
-          //});
-          //console.log('nextReservation:',nextReservation);
-          //resolve(nextReservation);
-        //}else{
-          //resolve();
-        //}
-      //})
-      //.catch(e=>console.log(e));
   });
  }
  //checkReservable関数（予約可能な時間をチェックする）
