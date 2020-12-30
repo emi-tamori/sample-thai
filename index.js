@@ -167,14 +167,7 @@ const lineBot = (req,res) => {
       }*/
     orderChoice(ev);
     }else if(text === '予約確認'){
-      //スタッフ人数分のreservableArrayを取得
-      const nextReservation = [];
-      for(let i=0; i<STAFFS.length; i++){
-        //const nextReservation = await checkNextReservation(ev);
-        const nextReservation = await checkReservable(ev,i);
-      }
-      console.log('nextReservation:',nextReservation);
-      
+      const nextReservation = await checkNextReservation(ev);
       if(typeof nextReservation === 'undefined'){
         return client.replyMessage(ev.replyToken,{
           "type":"text",
@@ -1495,7 +1488,3 @@ const getNumberOfReservations = (date) => {
     }
   })
 }
-
-
-
-
