@@ -1277,7 +1277,7 @@ const checkNextReservation = (ev) => {
         text: `SELECT * FROM reservations.${name} WHERE line_uid=$1 ORDER BY starttime ASC;`,
         values: [`${id}`]
       }
-    });
+    
     connection.query(selectQuery)
     .then(res=>{
       if(res.rows.length){
@@ -1309,7 +1309,7 @@ const checkNextReservation = (ev) => {
         //}
       //})
       //.catch(e=>console.log(e));
-  //});
+  });
  }
  //checkReservable関数（予約可能な時間をチェックする）
  const checkReservable = (ev,menu,treatTime,date,num) => {
