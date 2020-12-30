@@ -116,7 +116,7 @@ const lineBot = (req,res) => {
     const text = (ev.message.type === 'text') ? ev.message.text : '';
     
     if(text === '予約する'){
-      const nextReservation = await checkNextReservation(ev);
+      /*const nextReservation = await checkNextReservation(ev);
       if(nextReservation.length){
         console.log('すでに予約あり');
         const startTimestamp = nextReservation[0].starttime;
@@ -164,10 +164,11 @@ const lineBot = (req,res) => {
         });
       }else{
         orderChoice(ev);
-      }
-    //orderChoice(ev);
+      }*/
+    orderChoice(ev);
     }else if(text === '予約確認'){
       const nextReservation = await checkNextReservation(ev);
+       console.log('nextReservation =',nextReservation);
       if(typeof nextReservation === 'undefined'){
         return client.replyMessage(ev.replyToken,{
           "type":"text",
