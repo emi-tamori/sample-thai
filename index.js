@@ -175,7 +175,7 @@ const lineBot = (req,res) => {
           "text":"次回の予約は入っておりません。"
         })
       }else if(nextReservation.length){
-        const startTimestamp =nextReservation[0].starttime;
+        const startTimestamp =nextReservation.starttime;
         const date = dateConversion(startTimestamp);
         const menu = MENU[parseInt(nextReservation[0].menu)];
         const treatTime = nextReservation[0].treattime;
