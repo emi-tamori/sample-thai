@@ -32,3 +32,19 @@ body {
   .img {
     width: 70vw;
   }
+/* ナビゲーションバー */
+.navbar{
+    width:98vw;
+    margin-bottom:2vw;
+    padding:0.5vw 2vw;
+}
+.navbar-brand{
+    font-size:1.2rem;
+}
+.navbar-toggler{
+    padding:1vw 2vw;
+    font-size:1rem;
+}
+.nav-item{
+    font-size:0.8rem;
+}
