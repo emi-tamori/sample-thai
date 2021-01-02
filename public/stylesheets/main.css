@@ -9,7 +9,7 @@ body {
   }
   .top-font {
     font-family: 'ヒラギノ丸ゴ ProN', 'Hiragino Maru Gothic ProN', sans-serif;
-    font-size: 4.5vw;
+    font-size:1.5rem;
   }
   .top-string {
     margin-top: 1vw;
@@ -17,9 +17,14 @@ body {
   #toUsers {
     margin: 2vw 2vw;
     width: 26vw;
-    font-size: 2.5vw;
+    font-size: 2vw;
   }
   #toReservations {
+    margin: 2vw 2vw;
+    width: 26vw;
+    font-size: 2.5vw;
+  }
+  #toStaffs {
     margin: 2vw 2vw;
     width: 26vw;
     font-size: 2.5vw;
