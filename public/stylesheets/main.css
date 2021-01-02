@@ -48,3 +48,7 @@ body {
 .nav-item{
     font-size:0.8rem;
 }
+/* 顧客管理画面 */ 
+#usersPage{ 
+  text-align:center; 
+}
