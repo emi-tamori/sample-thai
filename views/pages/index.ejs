@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>トップページです</title>
+    <%- include ("../partials/header.ejs") %>
 </head>
 <body>
     <h1>トップページです</h1>
     <a href='/users'>顧客管理画面</a> <a href='/reservations'>予約管理画面</a> <a href='/staffs'>スタッフ管理画面</a>
     
+    <%- include ("../partials/footer.ejs") %>
 </body>
 </html>
