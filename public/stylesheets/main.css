@@ -1,0 +1,29 @@
+/* 共通 */
+body {
+    width: auto;
+    margin: 0 auto;
+  }
+  /* トップページ */
+  .toppage {
+    text-align: center;
+  }
+  .top-font {
+    font-family: 'ヒラギノ丸ゴ ProN', 'Hiragino Maru Gothic ProN', sans-serif;
+    font-size: 4.5vw;
+  }
+  .top-string {
+    margin-top: 1vw;
+  }
+  #toUsers {
+    margin: 2vw 2vw;
+    width: 26vw;
+    font-size: 2.5vw;
+  }
+  #toReservations {
+    margin: 2vw 2vw;
+    width: 26vw;
+    font-size: 2.5vw;
+  }
+  .img {
+    width: 70vw;
+  }
