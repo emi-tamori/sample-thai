@@ -5,6 +5,7 @@ const line = require('@line/bot-sdk');
 const path = require('path');
 const { Client } = require('pg');
 const router = require('./routers/index');
+const apiRouter = require('./routers/api');
 const connection = new Client({
     user:process.env.PG_USER,
     host:process.env.PG_HOST,
@@ -26,6 +27,7 @@ app
   .use(express.static(path.join(__dirname,'public'))) 
   .post('/hook',line.middleware(config),(req,res)=> lineBot(req,res)) 
   .use('/',router) 
+  .use('/api',apiRouter)
   .set('views', path.join(__dirname, 'views')) 
   .set('view engine', 'ejs') 
   .listen(PORT,()=>console.log(`Listening on ${PORT}`));
