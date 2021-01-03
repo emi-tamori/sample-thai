@@ -15,20 +15,36 @@ module.exports = {
             const pickup_users = { 
                 text:'SELECT * FROM users;' 
             }; 
-            const pickup_reservations = { 
-                text:'SELECT * FROM reservations;' 
-            }; 
-            connection.query(pickup_users) 
-            .then(users=>{ 
-                connection.query(pickup_reservations) 
-                .then(reservations=>{ 
-                    const data = { users:users, reservations:reservations } 
-                    console.log('data in model:',data); 
-                    resolve(data); 
-                }) 
-                .catch(e=>console.log(e)) 
-            }) 
-                .catch(e=>console.log(e)) 
-            }); 
-            } 
-        }
+            connection.query(pickup_users)
+                .then(users=>{
+                    const pickup_staffs = {
+                        text: 'SELECT * FROM shifts;'
+                    }
+                    connection.query(pickup_staffs)
+                        .then(staffs=>{
+                            const reservations = [];
+                            staffs.rows.forEach((staff,index)=>{
+                                const pickup_reservations = {
+                                    text: `SELECT * FROM reservations.${staff.name};`
+                                }
+                                connection.query(pickup_reservations)
+                                    .then(res=>{
+                                        reservations.push(res.rows);
+                                        if(index === staffs.rows.length-1) {
+                                            const data = {
+                                                users: users.rows,
+                                                staffs: staffs.rows,
+                                                reservations
+                                            }
+                                            resolve(data);
+                                        }
+                                    })
+                                    .catch(e=>console.log(e));
+                            })
+                        })
+                        .catch(e=>console.log(e));
+                })
+                .catch(e=>console.log(e))
+        });
+    }
+}
